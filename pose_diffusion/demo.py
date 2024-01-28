@@ -31,7 +31,8 @@ from util.load_img_folder import load_and_preprocess_images
 from util.geometry_guided_sampling import geometry_guided_sampling
 from util.metric import compute_ARE
 from visdom import Visdom
-
+from torchviz import make_dot
+import onnx
 
 @hydra.main(config_path="../cfgs/", config_name="default")
 def demo(cfg: DictConfig) -> None:
@@ -105,6 +106,10 @@ def demo(cfg: DictConfig) -> None:
         # The poses and focal length are defined as
         # NDC coordinate system in
         # https://github.com/facebookresearch/pytorch3d/blob/main/docs/notes/cameras.md
+        # Save the model to onnx file
+
+        # dummy_input = (images, None, cfg.GGS.start_step)    
+        # torch.onnx.export(model, dummy_input, "model.onnx", verbose=True, input_names=["image", "cond_fn", "cond_start_step"], output_names=["pred_cameras"])
         predictions = model(image=images, cond_fn=cond_fn, cond_start_step=cfg.GGS.start_step, training=False)
 
     pred_cameras = predictions["pred_cameras"]
