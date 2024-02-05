@@ -46,16 +46,16 @@ def train_fn(cfg: DictConfig):
     set_seed_and_print(cfg.seed)
 
     # Visualization setup
-    if accelerator.is_main_process:
-        try:
-            from visdom import Visdom
+    # if accelerator.is_main_process:
+    #     try:
+    #         from visdom import Visdom
 
-            viz = Visdom()
-            # cams_show = {"ours_pred": pred_cameras, "ours_pred_aligned": pred_cameras_aligned, "gt_cameras": gt_cameras}
-            # fig = plot_scene({f"{folder_path}": cams_show})
-            # viz.plotlyplot(fig, env="visual", win="cams")
-        except:
-            print("Warning: please check your visdom connection for visualization")
+    #         viz = Visdom()
+    #         # cams_show = {"ours_pred": pred_cameras, "ours_pred_aligned": pred_cameras_aligned, "gt_cameras": gt_cameras}
+    #         # fig = plot_scene({f"{folder_path}": cams_show})
+    #         # viz.plotlyplot(fig, env="visual", win="cams")
+    #     except:
+    print("INFO: no visualization for now.")
 
     # Data loading
     dataset, eval_dataset = get_co3d_dataset(cfg)

@@ -31,8 +31,6 @@ from util.load_img_folder import load_and_preprocess_images
 from util.geometry_guided_sampling import geometry_guided_sampling
 from util.metric import compute_ARE
 from visdom import Visdom
-from torchviz import make_dot
-import onnx
 
 @hydra.main(config_path="../cfgs/", config_name="default")
 def demo(cfg: DictConfig) -> None:
