@@ -10,7 +10,7 @@ import warnings
 from collections import defaultdict
 from dataclasses import field, dataclass
 from typing import Any, Dict, List, Optional, Tuple, Union, Callable
-
+from models import pointnet2_sem_seg 
 
 import torch
 import torch.nn as nn
@@ -26,20 +26,13 @@ _RESNET_STD = [0.229, 0.224, 0.225]
 
 
 class MultiScaleImageFeatureExtractor(nn.Module):
-    def __init__(self, modelname: str = "dino_vits16", freeze: bool = False, scale_factors: list = [1, 1 / 2, 1 / 3]):
+    def __init__(self, modelname: str = "pointnet", freeze: bool = False, scale_factors: list = [1, 1 / 2, 1 / 3]):
         super().__init__()
         self.freeze = freeze
         self.scale_factors = scale_factors
 
-        if "res" in modelname:
-            self._net = getattr(torchvision.models, modelname)(pretrained=True)
-            self._output_dim = self._net.fc.weight.shape[1]
-            self._net.fc = nn.Identity()
-        elif "dinov2" in modelname:
-            self._net = torch.hub.load("facebookresearch/dinov2", modelname)
-            self._output_dim = self._net.norm.weight.shape[0]
-        elif "dino" in modelname:
-            self._net = torch.hub.load("facebookresearch/dino:main", modelname)
+        if "pointnet" in modelname:
+            self._net = torch.load("/home/arj/code/models/pointnet2.pth")
             self._output_dim = self._net.norm.weight.shape[0]
         else:
             raise ValueError(f"Unknown model name {modelname}")
@@ -55,8 +48,8 @@ class MultiScaleImageFeatureExtractor(nn.Module):
         return self._output_dim
 
     def forward(self, image_rgb: torch.Tensor) -> torch.Tensor:
-        img_normed = self._resnet_normalize_image(image_rgb)
-        features = self._compute_multiscale_features(img_normed)
+        # img_normed = self._resnet_normalize_image(image_rgb)
+        features = self._compute_multiscale_features(image_rgb)
         return features
 
     def _resnet_normalize_image(self, img: torch.Tensor) -> torch.Tensor:

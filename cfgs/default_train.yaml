@@ -4,10 +4,9 @@ exp_name: exp001_train
 
 train:
     # Please Specify Your Own Path
-    CO3D_DIR: "/datasets01/co3dv2/080422/"
-    CO3D_ANNOTATION_DIR: "/fsx-repligen/jianyuan/datasets/co3d_relpose/"
+    CO3D_DIR: "/home/arj/code/datasets/pcd_train/"
+    CO3D_ANNOTATION_DIR: "/home/arj/code/datasets/pcd_train/"
     
-
     img_size: 224
     category: seen
     restart_num: 50
@@ -33,7 +32,7 @@ train:
     preload_image: False
     cudnnbenchmark: False
     first_camera_transform: True
-    min_num_images: 50
+    min_num_images: 15
     images_per_seq: [3, 51]
     compute_optical: True
     color_aug: True
@@ -49,9 +48,9 @@ MODEL:
     pose_encoding_type: absT_quaR_logFL
 
     IMAGE_FEATURE_EXTRACTOR: 
-        _target_: models.MultiScaleImageFeatureExtractor
-        modelname: "dino_vits16"
-        freeze: False
+        _target_: models.PointNet2_ssg_cut
+        # modelname: "pointnet2_ssg_cut" #n/a
+        # freeze: False
 
     DENOISER: 
         _target_: models.Denoiser

@@ -1,0 +1,25 @@
+{"sequence_name":
+ "540_79043_153212", "frame_number":
+ 6, "frame_timestamp":
+ 0.3308457711442786, "image":
+ {"path":
+ "apple/540_79043_153212/images/frame000006.jpg", "size":
+ [900, 2000]}, "depth":
+ {"path":
+ "apple/540_79043_153212/depths/frame000006.jpg.geometric.png", "scale_adjustment":
+ 1.0, "mask_path":
+ "apple/540_79043_153212/depth_masks/frame000006.png"}, "mask":
+ {"path":
+ "apple/540_79043_153212/masks/frame000006.png", "mass":
+ 1000000}, "viewpoint":
+ {"R":
+ [[-0.9941162467002869, -0.10805200785398483, 0.007596105802804232], [0.10785271227359772, -0.9939004778862, -0.02301282249391079], [0.010036354884505272, -0.022058159112930298, 0.9997063279151917]], "T":
+ [-0.35470789670944214, 1.2838153839111328, 14.110940933227539], "focal_length":
+ [3.959122657775879, 3.9611024856567383], "principal_point":
+ [-0.0, -0.0], "intrinsics_format":
+ "ndc_isotropic"}, "meta":
+ {"frame_type":
+ "test_unseen", "frame_splits":
+ ["singlesequence_apple_test_0_unseen"], "eval_batch_maps":
+ []}, "camera_name":
+ null}

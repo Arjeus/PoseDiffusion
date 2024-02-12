@@ -19,12 +19,18 @@ from pytorch3d.implicitron.tools.stats import Stats
 from pytorch3d.vis.plotly_vis import plot_scene
 from pytorch3d.implicitron.tools.vis_utils import get_visdom_connection
 from datasets.co3d_v2 import Co3dDataset
-
+import pdb
 
 logger = logging.getLogger(__name__)
 
 
 class DynamicBatchSampler(BatchSampler):
+    @property
+    def batch_size(self):
+        # Return a fixed batch size or compute the average/expected batch size
+        fixed_batch_size = 5
+        return fixed_batch_size
+
     def __init__(self, num_sequences, dataset_len=1024, max_images=128, images_per_seq=(3, 20)):
         # Batch sampler with a dynamic number of sequences
         # max_images >= number_of_sequences * images_per_sequence
@@ -108,7 +114,7 @@ def get_co3d_dataset(cfg):
         "color_aug": cfg.train.color_aug,
         "erase_aug": cfg.train.erase_aug,
     }
-
+    pdb.set_trace()
     # Create the train dataset
     dataset = Co3dDataset(**common_params, split="train")
 

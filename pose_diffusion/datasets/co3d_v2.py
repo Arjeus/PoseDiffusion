@@ -100,12 +100,13 @@ class Co3dDataset(Dataset):
         self.min_num_images = min_num_images
         self.foreground_crop = foreground_crop
 
-        for c in category:
-            annotation_file = osp.join(self.CO3D_ANNOTATION_DIR, f"{c}_{split_name}.jgz")
-            with gzip.open(annotation_file, "r") as fin:
-                annotation = json.loads(fin.read())
+        annotation_file = osp.join(self.CO3D_ANNOTATION_DIR, f"pcd_train_{split_name}.json")
+        # open file and load annotation
+        with open(annotation_file, "r") as fin:
+            annotation = json.loads(fin.read())
 
-            counter = 0
+        counter = 0
+        for c in category:
             for seq_name, seq_data in annotation.items():
                 counter += 1
                 if len(seq_data) < min_num_images:
@@ -125,11 +126,11 @@ class Co3dDataset(Dataset):
                     filtered_data.append(
                         {
                             "filepath": data["filepath"],
-                            "bbox": data["bbox"],
+                            # "bbox": data["bbox"],
                             "R": data["R"],
                             "T": data["T"],
-                            "focal_length": data["focal_length"],
-                            "principal_point": data["principal_point"],
+                            "focal_length": data["focal_length"], # will eventually remove this too
+                            # "principal_point": data["principal_point"],
                         }
                     )
 
@@ -139,11 +140,11 @@ class Co3dDataset(Dataset):
             print(annotation_file)
             print(counter)
 
-        self.sequence_list = list(self.rotations.keys())
-                
-        self.split = split
-        self.debug = debug
-        self.sort_by_filename = sort_by_filename
+            self.sequence_list = list(self.rotations.keys())
+                    
+            self.split = split
+            self.debug = debug
+            self.sort_by_filename = sort_by_filename
 
         if transform is None:
             self.transform = transforms.Compose([transforms.ToTensor(), transforms.Resize(img_size, antialias=True)])
@@ -397,46 +398,6 @@ def square_bbox(bbox, padding=0.0, astype=None):
 
 TRAINING_CATEGORIES = [
     "apple",
-    "backpack",
-    "banana",
-    "baseballbat",
-    "baseballglove",
-    "bench",
-    "bicycle",
-    "bottle",
-    "bowl",
-    "broccoli",
-    "cake",
-    "car",
-    "carrot",
-    "cellphone",
-    "chair",
-    "cup",
-    "donut",
-    "hairdryer",
-    "handbag",
-    "hydrant",
-    "keyboard",
-    "laptop",
-    "microwave",
-    "motorcycle",
-    "mouse",
-    "orange",
-    "parkingmeter",
-    "pizza",
-    "plant",
-    "stopsign",
-    "teddybear",
-    "toaster",
-    "toilet",
-    "toybus",
-    "toyplane",
-    "toytrain",
-    "toytruck",
-    "tv",
-    "umbrella",
-    "vase",
-    "wineglass",
 ]
 
 TEST_CATEGORIES = ["ball", "book", "couch", "frisbee", "hotdog", "kite", "remote", "sandwich", "skateboard", "suitcase"]

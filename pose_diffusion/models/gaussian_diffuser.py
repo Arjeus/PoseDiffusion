@@ -326,7 +326,7 @@ class GaussianDiffusion(nn.Module):
 
         return {"loss": loss, "noise": noise, "x_0_pred": x_0_pred, "x_t": x, "t": t}
 
-    def forward(self, pose, z=None, *args, **kwargs):
+    def forward(self, pose, z=None, *args, **kwargs): # we will know how z is processed later.
         b = len(pose)
         t = torch.randint(0, self.num_timesteps, (b,), device=pose.device).long()
         return self.p_losses(pose, t, z=z, *args, **kwargs)

@@ -20,6 +20,8 @@ MODEL:
 
     IMAGE_FEATURE_EXTRACTOR: 
         _target_: models.MultiScaleImageFeatureExtractor
+        # The feature extractor will be replaced by a transformer model in the future
+        # For now, FCN will connect the transformer to the Diffusion Model
         freeze: False
 
     DENOISER: 
