@@ -28,7 +28,7 @@ from util.train_util import (
     set_seed_and_print,
     view_color_coded_images_for_visdom,
 )
-
+import pdb
 
 @hydra.main(config_path="../cfgs/", config_name="default_train")
 def train_fn(cfg: DictConfig):
@@ -160,9 +160,9 @@ def _train_or_eval_fn(
     max_it = len(dataloader)
 
     stat_set = "train" if training else "eval"
-
     for step, batch in enumerate(dataloader):
         # data preparation
+        # pdb.set_trace()
         images = batch["image"].to(accelerator.device)
         translation = batch["T"].to(accelerator.device)
         rotation = batch["R"].to(accelerator.device)

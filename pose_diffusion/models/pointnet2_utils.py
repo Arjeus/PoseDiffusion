@@ -79,6 +79,7 @@ def farthest_point_sample(xyz, npoint):
         centroid = xyz[batch_indices, farthest, :].view(B, 1, 3)
         dist = torch.sum((xyz - centroid) ** 2, -1)
         mask = dist < distance
+        dist = dist.float()
         distance[mask] = dist[mask]
         farthest = torch.max(distance, -1)[1]
     return centroids

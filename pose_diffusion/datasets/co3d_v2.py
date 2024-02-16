@@ -28,7 +28,7 @@ from util.camera_transform import adjust_camera_to_bbox_crop_, adjust_camera_to_
 
 Image.MAX_IMAGE_PIXELS = None
 ImageFile.LOAD_TRUNCATED_IMAGES = True
-
+# import pdb
 
 class Co3dDataset(Dataset):
     def __init__(
@@ -123,6 +123,7 @@ class Co3dDataset(Dataset):
                         break
 
                     # Ignore all unnecessary information.
+                    
                     filtered_data.append(
                         {
                             "filepath": data["filepath"],
@@ -130,16 +131,14 @@ class Co3dDataset(Dataset):
                             "R": data["R"],
                             "T": data["T"],
                             "focal_length": data["focal_length"], # will eventually remove this too
-                            # "principal_point": data["principal_point"],
+                            "principal_point": data["principal_point"],
                         }
                     )
-
                 if not bad_seq:
                     self.rotations[seq_name] = filtered_data
 
             print(annotation_file)
             print(counter)
-
             self.sequence_list = list(self.rotations.keys())
                     
             self.split = split
@@ -180,7 +179,7 @@ class Co3dDataset(Dataset):
             self.rand_erase = transforms.RandomErasing(
                 p=0.1, scale=(0.02, 0.33), ratio=(0.3, 3.3), value=0, inplace=False
             )
-
+        
         print(f"Low quality translation sequences, not used: {self.low_quality_translations}")
         print(f"Data size: {len(self)}")
 
@@ -220,7 +219,6 @@ class Co3dDataset(Dataset):
         # Different from most pytorch datasets,
         # here we not only get index, but also a dynamic variable n_per_seq
         # supported by DynamicBatchSampler
-
         index, n_per_seq = idx_N
         sequence_name = self.sequence_list[index]
         metadata = self.rotations[sequence_name]
@@ -248,21 +246,20 @@ class Co3dDataset(Dataset):
         for anno in annos:
             filepath = anno["filepath"]
             image_path = osp.join(self.CO3D_DIR, filepath)
-            image = Image.open(image_path).convert("RGB")
+            image = np.load(image_path)
 
-            if self.mask_images:
-                white_image = Image.new("RGB", image.size, (255, 255, 255))
-                mask_name = osp.basename(filepath.replace(".jpg", ".png"))
+            # if self.mask_images:
+            #     white_image = Image.new("RGB", image.size, (255, 255, 255))
+            #     mask_name = osp.basename(filepath.replace(".jpg", ".png"))
 
-                mask_path = osp.join(self.CO3D_DIR, category, sequence_name, "masks", mask_name)
-                mask = Image.open(mask_path).convert("L")
+            #     mask_path = osp.join(self.CO3D_DIR, category, sequence_name, "masks", mask_name)
+            #     mask = Image.open(mask_path).convert("L")
 
-                if mask.size != image.size:
-                    mask = mask.resize(image.size)
-                mask = Image.fromarray(np.array(mask) > 125)
-                image = Image.composite(image, white_image, mask)
-
-            images.append(image)
+            #     if mask.size != image.size:
+            #         mask = mask.resize(image.size)
+            #     mask = Image.fromarray(np.array(mask) > 125)
+            #     image = Image.composite(image, white_image, mask)
+            images.append(torch.from_numpy(image))
             rotations.append(torch.tensor(anno["R"]))
             translations.append(torch.tensor(anno["T"]))
             focal_lengths.append(torch.tensor(anno["focal_length"]))
@@ -276,8 +273,7 @@ class Co3dDataset(Dataset):
         new_pps = []
 
         for i, (anno, image) in enumerate(zip(annos, images)):
-            w, h = image.width, image.height
-
+            w, h = 255, 255 #dummy values
             if self.center_box:
                 min_dim = min(h, w)
                 top = (h - min_dim) // 2
@@ -290,32 +286,29 @@ class Co3dDataset(Dataset):
                 bbox_jitter = self._jitter_bbox(bbox)
             else:
                 bbox_jitter = bbox
-
             bbox_xywh = torch.FloatTensor(bbox_xyxy_to_xywh(bbox_jitter))
-            (focal_length_cropped, principal_point_cropped) = adjust_camera_to_bbox_crop_(
-                focal_lengths[i], principal_points[i], torch.FloatTensor(image.size), bbox_xywh
-            )
+            # (focal_length_cropped, principal_point_cropped) = adjust_camera_to_bbox_crop_(
+            #     focal_lengths[i], principal_points[i], torch.FloatTensor(image.size), bbox_xywh
+            # )
 
-            image = self._crop_image(image, bbox_jitter, white_bg=self.mask_images)
+            # image = self._crop_image(image, bbox_jitter, white_bg=self.mask_images)
 
-            (new_focal_length, new_principal_point) = adjust_camera_to_image_scale_(
-                focal_length_cropped,
-                principal_point_cropped,
-                torch.FloatTensor(image.size),
-                torch.FloatTensor([self.img_size, self.img_size]),
-            )
+            (new_focal_length, new_principal_point) = focal_lengths[i], principal_points[i]
 
+            #focals and principals not relevant in pointclouds
+            new_focal_length = focal_lengths[i]
+            new_principal_point = principal_points[i]
             new_fls.append(new_focal_length)
             new_pps.append(new_principal_point)
 
-            images_transformed.append(self.transform(image))
+            images_transformed.append(image)
             crop_center = (bbox_jitter[:2] + bbox_jitter[2:]) / 2
             cc = (2 * crop_center / min(h, w)) - 1
             crop_width = 2 * (bbox_jitter[2] - bbox_jitter[0]) / min(h, w)
 
             crop_parameters.append(torch.tensor([-cc[0], -cc[1], crop_width]).float())
 
-        images = images_transformed
+        # images = images_transformed
 
         batch = {"seq_id": sequence_name, "category": category, "n": len(metadata), "ind": torch.tensor(ids)}
 
@@ -352,7 +345,6 @@ class Co3dDataset(Dataset):
                 print(category)
                 print(sequence_name)
                 raise RuntimeError
-
         else:
             batch["R"] = torch.stack(rotations)
             batch["T"] = torch.stack(translations)
@@ -363,16 +355,15 @@ class Co3dDataset(Dataset):
         if self.transform is not None:
             images = torch.stack(images)
 
-        if self.color_aug and (not self.eval_time):
-            images = self.color_jitter(images)
-            if self.erase_aug:
-                images = self.rand_erase(images)
+        # if self.color_aug and (not self.eval_time):
+        #     images = self.color_jitter(images)
+        #     if self.erase_aug:
+        #         images = self.rand_erase(images)
 
         batch["image"] = images
 
         if return_path:
             return batch, image_paths
-        
         return batch
 
 
@@ -400,6 +391,6 @@ TRAINING_CATEGORIES = [
     "apple",
 ]
 
-TEST_CATEGORIES = ["ball", "book", "couch", "frisbee", "hotdog", "kite", "remote", "sandwich", "skateboard", "suitcase"]
+TEST_CATEGORIES = ["apple"]
 
-DEBUG_CATEGORIES = ["apple", "teddybear"]
+DEBUG_CATEGORIES = ["apple"]

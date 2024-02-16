@@ -14,7 +14,7 @@ train:
     resume_ckpt: False
     epochs: 100
     ckpt_interval: 5
-    num_workers: 8
+    num_workers: 6
 
     eval_interval: 5
 
@@ -32,10 +32,10 @@ train:
     preload_image: False
     cudnnbenchmark: False
     first_camera_transform: True
-    min_num_images: 15
-    images_per_seq: [3, 51]
+    min_num_images: 4
+    images_per_seq: [3, 5]
     compute_optical: True
-    color_aug: True
+    color_aug: False
     erase_aug: False
     batch_repeat: 90
 
