@@ -2,15 +2,14 @@ import torch.nn as nn
 import torch.nn.functional as F
 import torch
 import sys
-sys.path.append('/home/arjay55/code/Pointnet_Pointnet2_pytorch/')
-
+sys.path.append('/home/arj/code/PoseDiffusion/pose_diffusion')
 import os
 import numpy as np
 import glob
 import tqdm
 import torch.utils.data as torch_data
 import provider
-
+import pdb
 from models.pointnet2_utils import PointNetSetAbstraction, PointNetFeaturePropagation
 
 def get_unlabeled_data(folder):
@@ -79,11 +78,11 @@ if __name__ == '__main__':
     padding = 0.001
 
     model = get_model(13)
-    checkpoint = torch.load("/home/arjay55/code/Pointnet_Pointnet2_pytorch/log/sem_seg/pointnet2_sem_seg/checkpoints/best_model.pth")
+    checkpoint = torch.load("/home/arj/code/models/pointnet2.pth")
     model.load_state_dict(checkpoint['model_state_dict'])
     classifier = model.cuda()
     # how to get to xyz?
-    numpy_sample_input = get_unlabeled_data("/home/arjay55/code/pcl_exp_migrate/pcl_exp")
+    numpy_sample_input = get_unlabeled_data("/home/arj/code/datasets/pcd_train")
     scene_points = numpy_sample_input[:]
     # fill scene_points with added 3 channels
     scene_points[0] = np.concatenate((scene_points[0], np.ones((scene_points[0].shape[0], 3))), axis=1)
@@ -133,12 +132,13 @@ if __name__ == '__main__':
     index_room = index_room.reshape((-1, block_points))
 
     num_blocks = data_room.shape[0]
-    batch_data = np.zeros((1, block_points, 9))
+    batch_data = np.zeros((1, block_points, 69))
     batch_point_index = np.zeros((1, block_points))
     batch_smpw = np.zeros((1, block_points))
     start_idx = 0*1
     end_idx = min((0 + 1) * 1, num_blocks)
     real_batch_size = end_idx - start_idx 
+    pdb.set_trace()
     batch_data[0:real_batch_size, ...] = data_room[start_idx:end_idx, ...]
     batch_point_index[0:real_batch_size, ...] = index_room[start_idx:end_idx, ...]
     # batch_smpw[0:real_batch_size, ...] = sample_weight[start_idx:end_idx, ...]          
