@@ -89,7 +89,8 @@ for id in range(len(scene_points)):
     # batch_smpw[0:real_batch_size, ...] = sample_weight[start_idx:end_idx, ...]   
     # remove first dimension of batch_data
     batch_data = batch_data[0]
+    batch_data = batch_data.transpose()
     # save to npy
-    filename = "pointnet_ready_{}.npy".format(id)
+    filename = "/home/arj/code/datasets/pcd_train/pointnet_ready_{}.npy".format(id)
     np.save(filename, batch_data)
     

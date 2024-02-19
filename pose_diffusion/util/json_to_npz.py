@@ -12,7 +12,7 @@ glob = glob.glob("/home/arj/code/datasets/pcd_train/*.npy")
 n = len(glob)
 # iterate to form an array of strings with the format "full{n}.npy"
 for i in range(n):
-    glob[i] = f"full{i}.npy"
+    glob[i] = f"pointnet_ready_{i}.npy"
 
 
 train_percent = 0.75

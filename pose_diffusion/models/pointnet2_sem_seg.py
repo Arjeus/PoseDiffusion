@@ -23,6 +23,7 @@ class PointNet2_ssg_cut(nn.Module):
 
     def forward(self, xyz):
         l0_points = xyz
+        print(xyz.shape)
         l0_xyz = xyz[:,:3,:]
         print(l0_xyz.shape)
         l1_xyz, l1_points = self.sa1(l0_xyz, l0_points)
