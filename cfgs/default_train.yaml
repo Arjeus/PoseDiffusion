@@ -4,8 +4,8 @@ exp_name: exp001_train
 
 train:
     # Please Specify Your Own Path
-    CO3D_DIR: "/home/arj/code/datasets/pcd_train/"
-    CO3D_ANNOTATION_DIR: "/home/arj/code/datasets/pcd_train/"
+    CO3D_DIR: "/home/arjay55/code/datasets/pcd_train/"
+    CO3D_ANNOTATION_DIR: "/home/arjay55/code/datasets/pcd_train/"
     
     img_size: 224
     category: seen
@@ -23,7 +23,7 @@ train:
     len_train: 16384
     len_eval: 256
 
-    max_images: 512
+    max_images: 5
     normalize_cameras: True
     persistent_workers: True
 

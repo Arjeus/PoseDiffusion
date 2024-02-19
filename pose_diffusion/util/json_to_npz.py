@@ -4,10 +4,10 @@ from scipy.spatial.transform import Rotation as R
 import glob
 import json
 import math
-# import pdb
+import pdb
 
 # pdb.set_trace()
-glob = glob.glob("/home/arj/code/datasets/pcd_train/*.npy")
+glob = glob.glob("/home/arjay55/code/datasets/pcd_train/pointnet_ready_*.npy")
 # get number of elements in glob list
 n = len(glob)
 # iterate to form an array of strings with the format "full{n}.npy"
@@ -18,7 +18,7 @@ for i in range(n):
 train_percent = 0.75
 
 # import json file to pandas dataframe with no header
-df = pd.read_csv('/home/arj/code/datasets/pcd_train/pose.json', sep=' ', header=None)   
+df = pd.read_csv('/home/arjay55/code/datasets/pcd_train/pose.json', sep=' ', header=None)   
 #select last 4 columns with quaternion data of format qw qx qy qz and convert each row to matrix of shape (3,3)
 dfquat = df.iloc[:math.floor(train_percent*n), -4:].apply(lambda x: R.from_quat(x).as_matrix(), axis=1)
 # convert each numpy array to list
@@ -39,12 +39,12 @@ for count in range(math.floor(len(glob)*train_percent)):
 
 data = {"apple":apple}
 #save the json file
-with open('pcd_train_train.json', 'w') as f:
+with open('/home/arjay55/code/datasets/pcd_train/pcd_train_train.json', 'w') as f:
     json.dump(data, f)
 
 
 # import json file to pandas dataframe with no header
-df = pd.read_csv('/home/arj/code/datasets/pcd_train/pose.json', sep=' ', header=None)   
+df = pd.read_csv('/home/arjay55/code/datasets/pcd_train/pose.json', sep=' ', header=None)   
 #select last 4 columns with quaternion data of format qw qx qy qz and convert each row to matrix of shape (3,3)
 dfquat = df.iloc[:, -4:].apply(lambda x: R.from_quat(x).as_matrix(), axis=1)
 # convert each numpy array to list
@@ -65,5 +65,5 @@ for count in range(math.floor(len(glob)*train_percent)+1,len(glob)):
 
 data = {"apple":apple}
 #save the json file
-with open('pcd_train_test.json', 'w') as f:
+with open('/home/arjay55/code/datasets/pcd_train/pcd_train_test.json', 'w') as f:
     json.dump(data, f)

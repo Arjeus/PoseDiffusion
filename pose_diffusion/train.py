@@ -162,7 +162,6 @@ def _train_or_eval_fn(
     stat_set = "train" if training else "eval"
     for step, batch in enumerate(dataloader):
         # data preparation
-        # pdb.set_trace()
         images = batch["image"].to(accelerator.device)
         translation = batch["T"].to(accelerator.device)
         rotation = batch["R"].to(accelerator.device)

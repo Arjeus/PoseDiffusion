@@ -3,7 +3,6 @@ import torch.nn as nn
 import torch.nn.functional as F
 from time import time
 import numpy as np
-
 def timeit(tag, t):
     print("{}: {}s".format(tag, time() - t))
     return time()
@@ -196,6 +195,7 @@ class PointNetSetAbstraction(nn.Module):
         new_points = new_points.permute(0, 3, 2, 1) # [B, C+D, nsample,npoint]
         for i, conv in enumerate(self.mlp_convs):
             bn = self.mlp_bns[i]
+            new_points = new_points.float()
             new_points =  F.relu(bn(conv(new_points)))
 
         new_points = torch.max(new_points, 2)[0]
@@ -312,6 +312,7 @@ class PointNetFeaturePropagation(nn.Module):
         new_points = new_points.permute(0, 2, 1)
         for i, conv in enumerate(self.mlp_convs):
             bn = self.mlp_bns[i]
+            new_points = new_points.float()
             new_points = F.relu(bn(conv(new_points)))
         return new_points
 
