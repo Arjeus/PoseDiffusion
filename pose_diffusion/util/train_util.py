@@ -31,7 +31,7 @@ class DynamicBatchSampler(BatchSampler):
         fixed_batch_size = 5
         return fixed_batch_size
 
-    def __init__(self, num_sequences, dataset_len=1024, max_images=128, images_per_seq=(3, 20)):
+    def __init__(self, num_sequences, dataset_len=1024, max_images=10, images_per_seq=(3, 20)):
         # Batch sampler with a dynamic number of sequences
         # max_images >= number_of_sequences * images_per_sequence
         self.max_images = max_images
