@@ -28,6 +28,7 @@ from util.camera_transform import pose_encoding_to_camera, camera_to_pose_encodi
 import models
 from hydra.utils import instantiate
 from pytorch3d.renderer.cameras import PerspectiveCameras
+import pdb
 
 logger = logging.getLogger(__name__)
 
@@ -55,9 +56,14 @@ class PoseDiffusionModel(nn.Module):
         self.pose_encoding_type = pose_encoding_type
 
         self.image_feature_extractor = instantiate(IMAGE_FEATURE_EXTRACTOR, _recursive_=False)
+        #RuntimeError: mat1 and mat2 shapes cannot be multiplied (270x524606 and 702x512)
+        # resolve the above error by introducing a nn.Linear layer before the image_feature_extractor and self.diffuser
+        self.link_to_diffuser = nn.Linear(270, 702)
+
         self.diffuser = instantiate(DIFFUSER, _recursive_=False)
 
         denoiser = instantiate(DENOISER, _recursive_=False)
+        
         self.diffuser.model = denoiser
 
         self.target_dim = denoiser.target_dim
@@ -73,6 +79,9 @@ class PoseDiffusionModel(nn.Module):
             nn.init.constant_(m.bias, 0)
             nn.init.constant_(m.weight, 1.0)
 
+    def diffuser_wrapper(self,pose_encoding, z):
+        return self.diffuser(pose_encoding, z=z)
+    
     def forward(
         self,
         image: torch.Tensor,
@@ -117,8 +126,9 @@ class PoseDiffusionModel(nn.Module):
             else:
                 pose_encoding = pose_encoding.reshape(batch_num, -1, self.target_dim)
 
+            # pose_encoding_tf = self.link_to_diffuser(pose_encoding)
+            # diffusion_results = torch.utils.checkpoint.checkpoint(self.diffuser_wrapper, pose_encoding, z)
             diffusion_results = self.diffuser(pose_encoding, z=z)
-
             diffusion_results["pred_cameras"] = pose_encoding_to_camera(
                 diffusion_results["x_0_pred"], pose_encoding_type=self.pose_encoding_type
             )

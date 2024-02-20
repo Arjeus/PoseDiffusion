@@ -9,12 +9,12 @@ from collections import defaultdict
 from dataclasses import field, dataclass
 from typing import Any, Dict, List, Optional, Tuple, Union, Callable
 from util.embedding import TimeStepEmbedding, PoseEmbedding
-
+from torch.utils.checkpoint import checkpoint
 import torch
 import torch.nn as nn
 
 from hydra.utils import instantiate
-
+import pdb
 
 logger = logging.getLogger(__name__)
 
@@ -39,7 +39,7 @@ class Denoiser(nn.Module):
         first_dim = self.time_embed.out_dim + self.pose_embed.out_dim + z_dim + int(self.pivot_cam_onehot)
 
         d_model = TRANSFORMER.d_model
-        self._first = nn.Linear(first_dim, d_model)
+        self._first = nn.Linear(524606, d_model) #hardcoded value
 
         # slightly different from the paper that
         # we use 2 encoder layers and 6 decoder layers
@@ -50,14 +50,25 @@ class Denoiser(nn.Module):
         # TODO: change the implementation of MLP to a more mature one
         self._last = MLP(d_model, [mlp_hidden_dim, self.target_dim], norm_layer=nn.LayerNorm)
 
+    def checkpoint_fn(self, x, first, trunk, last):
+        input_ = first(x)
+
+        feats_ = trunk(input_)
+
+        output = last(feats_)
+
+        return output
+    
     def forward(self, x: torch.Tensor, t: torch.Tensor, z: torch.Tensor):  # B x N x dim  # B  # B x N x dim_z
         B, N, _ = x.shape
-
-        t_emb = self.time_embed(t)
+        t_emb = checkpoint(self.time_embed, t)
+        # t_emb = self.time_embed(t)
+        
         # expand t from B x C to B x N x C
         t_emb = t_emb.view(B, 1, t_emb.shape[-1]).expand(-1, N, -1)
 
-        x_emb = self.pose_embed(x)
+        x_emb = checkpoint(self.pose_embed, x)
+        # x_emb = self.pose_embed(x)
 
         if self.pivot_cam_onehot:
             # add the one hot vector identifying the first camera as pivot
@@ -66,16 +77,16 @@ class Denoiser(nn.Module):
             z = torch.cat([z, cam_pivot_id], dim=-1)
 
         feed_feats = torch.cat([x_emb, t_emb, z], dim=-1)
-
-        input_ = self._first(feed_feats)
-
-        feats_ = self._trunk(input_)
-
-        output = self._last(feats_)
-
+        output = checkpoint(self.checkpoint_fn, feed_feats, self._first, self._trunk, self._last)
         return output
+        # input_ = self._first(feed_feats)
 
+        # feats_ = self._trunk(input_)
 
+        # output = self._last(feats_)
+
+        # return output
+        
 def TransformerEncoderWrapper(
     d_model: int,
     nhead: int,

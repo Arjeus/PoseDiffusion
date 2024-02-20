@@ -20,10 +20,10 @@ train:
 
     print_interval: 10
 
-    len_train: 16384
-    len_eval: 256
+    len_train: 256
+    len_eval: 64
 
-    max_images: 5
+    max_images: 4
     normalize_cameras: True
     persistent_workers: True
 
@@ -32,15 +32,16 @@ train:
     preload_image: False
     cudnnbenchmark: False
     first_camera_transform: True
-    min_num_images: 4
-    images_per_seq: [3, 5]
+    min_num_images: 2
+    images_per_seq: [2,5]
     compute_optical: True
     color_aug: False
     erase_aug: False
-    batch_repeat: 90
+    batch_repeat: 10
 
 debug: False
 
+exp_dir: "/home/arjay55/code/models/posediffusion_ckpt/"
 
 MODEL:
     _target_: models.PoseDiffusionModel
@@ -56,9 +57,11 @@ MODEL:
         _target_: models.Denoiser
         TRANSFORMER:
             _target_:               models.TransformerEncoderWrapper
-            d_model:                512
+            # d_model:                512
+            d_model:                256
             nhead:                  4
-            dim_feedforward:        1024
+            # dim_feedforward:        1024
+            dim_feedforward:        512
             num_encoder_layers:     8
             dropout:                0.1
             batch_first:            True
