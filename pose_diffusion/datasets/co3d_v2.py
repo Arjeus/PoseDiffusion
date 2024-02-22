@@ -28,7 +28,7 @@ from util.camera_transform import adjust_camera_to_bbox_crop_, adjust_camera_to_
 
 Image.MAX_IMAGE_PIXELS = None
 ImageFile.LOAD_TRUNCATED_IMAGES = True
-# import pdb
+import pdb
 
 class Co3dDataset(Dataset):
     def __init__(

@@ -138,7 +138,6 @@ if __name__ == '__main__':
     start_idx = 0*1
     end_idx = min((0 + 1) * 1, num_blocks)
     real_batch_size = end_idx - start_idx 
-    pdb.set_trace()
     batch_data[0:real_batch_size, ...] = data_room[start_idx:end_idx, ...]
     batch_point_index[0:real_batch_size, ...] = index_room[start_idx:end_idx, ...]
     # batch_smpw[0:real_batch_size, ...] = sample_weight[start_idx:end_idx, ...]          

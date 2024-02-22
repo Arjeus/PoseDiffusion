@@ -12,18 +12,18 @@ train:
     restart_num: 50
     lr: 0.0001
     resume_ckpt: False
-    epochs: 100
+    epochs: 50
     ckpt_interval: 5
-    num_workers: 6
+    num_workers: 1
 
     eval_interval: 5
 
     print_interval: 10
 
-    len_train: 256
-    len_eval: 64
+    len_train: 22
+    len_eval: 8
 
-    max_images: 4
+    max_images: 8 # must be twice that of images_per_seq
     normalize_cameras: True
     persistent_workers: True
 
@@ -33,7 +33,7 @@ train:
     cudnnbenchmark: False
     first_camera_transform: True
     min_num_images: 2
-    images_per_seq: [2,5]
+    images_per_seq: [2,4]
     compute_optical: True
     color_aug: False
     erase_aug: False

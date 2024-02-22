@@ -6,7 +6,6 @@ import json
 import math
 import pdb
 
-# pdb.set_trace()
 glob = glob.glob("/home/arjay55/code/datasets/pcd_train/pointnet_ready_*.npy")
 # get number of elements in glob list
 n = len(glob)
