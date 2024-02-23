@@ -20,10 +20,10 @@ train:
 
     print_interval: 10
 
-    len_train: 22
-    len_eval: 8
+    len_train: 256
+    len_eval: 64
 
-    max_images: 8 # must be twice that of images_per_seq
+    max_images: 10 # must be twice that of images_per_seq
     normalize_cameras: True
     persistent_workers: True
 
@@ -33,7 +33,7 @@ train:
     cudnnbenchmark: False
     first_camera_transform: True
     min_num_images: 2
-    images_per_seq: [2,4]
+    images_per_seq: [2,5]
     compute_optical: True
     color_aug: False
     erase_aug: False
