@@ -7,6 +7,8 @@ import math
 import pdb
 
 glob = glob.glob("/home/arjay55/code/datasets/pcd_train/pointnet_ready_*.npy")
+pose_json_path = "/home/arjay55/code/datasets/pcd_train/pose100.json"
+
 # get number of elements in glob list
 n = len(glob)
 # iterate to form an array of strings with the format "full{n}.npy"
@@ -17,7 +19,7 @@ for i in range(n):
 train_percent = 0.75
 
 # import json file to pandas dataframe with no header
-df = pd.read_csv('/home/arjay55/code/datasets/pcd_train/pose200.json', sep=' ', header=None)   
+df = pd.read_csv('{}'.format(pose_json_path), sep=' ', header=None)   
 #select last 4 columns with quaternion data of format qw qx qy qz and convert each row to matrix of shape (3,3)
 dfquat = df.iloc[:math.floor(train_percent*n), -4:].apply(lambda x: R.from_quat(x).as_matrix(), axis=1)
 # convert each numpy array to list
@@ -33,7 +35,7 @@ apple = []
 rot = dfquat.values.tolist()
 tran = dftranslation.tolist()
 foc = dffocal.tolist()
-for count in range(math.floor(len(glob)*train_percent)):
+for count in range(math.floor(df.shape[0]*train_percent)):
     apple.append({"filepath":glob[count],"R":rot[count],"T":tran[count],"focal_length":foc[count],"principal_point":[-0.0, -0.0]})
 
 data = {"apple":apple}
@@ -43,7 +45,7 @@ with open('/home/arjay55/code/datasets/pcd_train/pcd_train_train.json', 'w') as 
 
 
 # import json file to pandas dataframe with no header
-df = pd.read_csv('/home/arjay55/code/datasets/pcd_train/pose200.json', sep=' ', header=None)   
+df = pd.read_csv('{}'.format(pose_json_path), sep=' ', header=None)   
 #select last 4 columns with quaternion data of format qw qx qy qz and convert each row to matrix of shape (3,3)
 dfquat = df.iloc[:, -4:].apply(lambda x: R.from_quat(x).as_matrix(), axis=1)
 # convert each numpy array to list
@@ -59,7 +61,7 @@ apple = []
 rot = dfquat.values.tolist()
 tran = dftranslation.tolist()
 foc = dffocal.tolist()
-for count in range(math.floor(len(glob)*train_percent)+1,len(glob)):
+for count in range(math.floor(df.shape[0]*train_percent)+1,df.shape[0]):
     apple.append({"filepath":glob[count],"R":rot[count],"T":tran[count],"focal_length":foc[count],"principal_point":[-0.0, -0.0]})
 
 data = {"apple":apple}

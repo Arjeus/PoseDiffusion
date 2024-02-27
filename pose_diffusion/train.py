@@ -82,12 +82,12 @@ def train_fn(cfg: DictConfig):
 
     start_epoch = 0
     if cfg.train.resume_ckpt:
-        checkpoint = torch.load(cfg.train.resume_ckpt)
-        try:
-            model.load_state_dict(prefix_with_module(checkpoint), strict=True)
-        except:
-            model.load_state_dict(checkpoint, strict=True)
-
+        # checkpoint = torch.load(cfg.train.resume_ckpt)
+        # try:
+        #     model.load_state_dict(prefix_with_module(checkpoint), strict=True)
+        # except:
+        #     model.load_state_dict(checkpoint, strict=True)
+        accelerator.load_state(cfg.train.resume_ckpt)
         accelerator.print(f"Successfully resumed from {cfg.train.resume_ckpt}")
 
     # metrics to record
