@@ -389,8 +389,9 @@ def square_bbox(bbox, padding=0.0, astype=None):
 
 TRAINING_CATEGORIES = [
     "apple",
+    "site1_handheld_3",
 ]
 
-TEST_CATEGORIES = ["apple"]
+TEST_CATEGORIES = ["apple","site1_handheld_3"]
 
-DEBUG_CATEGORIES = ["apple"]
+DEBUG_CATEGORIES = ["apple","site1_handheld_3"]

@@ -6,14 +6,14 @@ import json
 import math
 import pdb
 
-glob = glob.glob("/home/arjay55/code/datasets/pcd_train/pointnet_ready_*.npy")
-pose_json_path = "/home/arjay55/code/datasets/pcd_train/pose100.json"
+glob = glob.glob("site1_handheld3_pn_*.npy")
+pose_json_path = "/home/arjay55/code/datasets/pcd_train2/pose10.json"
 
 # get number of elements in glob list
 n = len(glob)
 # iterate to form an array of strings with the format "full{n}.npy"
 for i in range(n):
-    glob[i] = f"pointnet_ready_{i}.npy"
+    glob[i] = f"site1_handheld3_pn_{i}.npy"
 
 
 train_percent = 0.75
@@ -40,7 +40,7 @@ for count in range(math.floor(df.shape[0]*train_percent)):
 
 data = {"apple":apple}
 #save the json file
-with open('/home/arjay55/code/datasets/pcd_train/pcd_train_train.json', 'w') as f:
+with open('/home/arjay55/code/datasets/pcd_train/pcd_train_train2.json', 'w') as f:
     json.dump(data, f)
 
 
@@ -64,7 +64,7 @@ foc = dffocal.tolist()
 for count in range(math.floor(df.shape[0]*train_percent)+1,df.shape[0]):
     apple.append({"filepath":glob[count],"R":rot[count],"T":tran[count],"focal_length":foc[count],"principal_point":[-0.0, -0.0]})
 
-data = {"apple":apple}
+data = {"site1_handheld_3":apple}
 #save the json file
-with open('/home/arjay55/code/datasets/pcd_train/pcd_train_test.json', 'w') as f:
+with open('/home/arjay55/code/datasets/pcd_train/pcd_train_test2.json', 'w') as f:
     json.dump(data, f)

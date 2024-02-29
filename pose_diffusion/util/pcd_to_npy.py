@@ -4,9 +4,10 @@ import glob
 import os  # Import for path handling
 import pdb
 
-pcd_files = glob.glob("/home/arjay55/code/datasets/pcd_train/*.pcd")
+mydir = "/home/arjay55/code/datasets/pcd_train2"
+pcd_files = glob.glob("{}/*.pcd".format(mydir))
 # delete all npy files
-for file in glob.glob("/home/arjay55/code/datasets/pcd_train/*.npy"):
+for file in glob.glob("{}/*.npy".format(mydir)):
     os.remove(file)
 
 def get_unlabeled_data(folder):
@@ -29,7 +30,7 @@ block_points = 4096
 padding = 0.001
 
 # how to get to xyz?
-numpy_sample_input = get_unlabeled_data("/home/arjay55/code/datasets/pcd_train")
+numpy_sample_input = get_unlabeled_data("{}".format(mydir))
 scene_points = numpy_sample_input[:]
 # fill scene_points with added 3 channels
 for id in range(len(scene_points)):
@@ -91,6 +92,6 @@ for id in range(len(scene_points)):
     batch_data = batch_data[0]
     batch_data = batch_data.transpose()
     # save to npy
-    filename = "/home/arjay55/code/datasets/pcd_train/pointnet_ready_{}.npy".format(id)
+    filename = "{}/site1_handheld3_pn_{}.npy".format(mydir,id)
     np.save(filename, batch_data)
     
