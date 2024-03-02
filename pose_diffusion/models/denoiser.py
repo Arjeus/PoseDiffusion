@@ -23,7 +23,7 @@ class Denoiser(nn.Module):
     def __init__(
         self,
         TRANSFORMER: Dict,
-        target_dim: int = 9,  # TODO: reduce fl dim from 2 to 1
+        target_dim: int = 7,  # TODO: reduce fl dim from 2 to 1
         pivot_cam_onehot: bool = True,
         z_dim: int = 384,
         mlp_hidden_dim: bool = 128,
@@ -39,7 +39,7 @@ class Denoiser(nn.Module):
         first_dim = self.time_embed.out_dim + self.pose_embed.out_dim + z_dim + int(self.pivot_cam_onehot)
 
         d_model = TRANSFORMER.d_model
-        self._first = nn.Linear(524606, d_model) #hardcoded value
+        self._first = nn.Linear(524564, d_model) #hardcoded value
 
         # slightly different from the paper that
         # we use 2 encoder layers and 6 decoder layers

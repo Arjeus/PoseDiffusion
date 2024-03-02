@@ -101,7 +101,7 @@ def pose_encoding_to_camera(
     if return_dict:
         return {"focal_length": focal_length, "R": R, "T": abs_T}
 
-    pred_cameras = PerspectiveCameras(focal_length=focal_length, R=R, T=abs_T, device=R.device)
+    pred_cameras = PerspectiveCameras(R=R, T=abs_T, device=R.device)
     return pred_cameras
 
 
@@ -121,7 +121,8 @@ def camera_to_pose_encoding(
         )
 
         # Concatenate to form pose_encoding
-        pose_encoding = torch.cat([camera.T, quaternion_R, log_focal_length], dim=-1)
+        # pose_encoding = torch.cat([camera.T, quaternion_R, log_focal_length], dim=-1)
+        pose_encoding = torch.cat([camera.T, quaternion_R], dim=-1)
 
     else:
         raise ValueError(f"Unknown pose encoding {pose_encoding_type}")
