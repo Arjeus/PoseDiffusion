@@ -17,7 +17,7 @@ train:
     ckpt_interval: 20
     num_workers: 1
 
-    eval_interval: 5
+    eval_interval: 1
 
     print_interval: 10
 
@@ -35,7 +35,7 @@ train:
     first_camera_transform: True
     min_num_images: 18
     images_per_seq: [18,20]
-    static_batch_size: 4
+    static_batch_size: 5
     compute_optical: True
     color_aug: False
     erase_aug: False
