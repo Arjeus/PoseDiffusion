@@ -268,7 +268,7 @@ def get_dataloader(cfg, dataset, is_eval=False):
         pin_memory=cfg.train.pin_memory,
         persistent_workers=cfg.train.persistent_workers,
     )
-    dataloader.batch_sampler.drop_last = True
+    dataloader.batch_sampler.drop_last = False
     dataloader.batch_sampler.sampler = dataloader.batch_sampler
     return dataloader
 

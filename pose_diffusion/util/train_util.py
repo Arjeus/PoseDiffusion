@@ -115,7 +115,6 @@ def get_co3d_dataset(cfg):
     }
     # Create the train dataset
     dataset = Co3dDataset(**common_params, split="train")
-
     # Create the eval dataset
     eval_dataset = Co3dDataset(**common_params, split="test", eval_time=True)
 

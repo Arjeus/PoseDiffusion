@@ -137,10 +137,7 @@ class Co3dDataset(Dataset):
                 if not bad_seq:
                     self.rotations[seq_name] = filtered_data
 
-            print(annotation_file)
-            print(counter)
             self.sequence_list = list(self.rotations.keys())
-                    
             self.split = split
             self.debug = debug
             self.sort_by_filename = sort_by_filename

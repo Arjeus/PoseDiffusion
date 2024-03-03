@@ -51,6 +51,6 @@ class get_loss(nn.Module):
 
 if __name__ == '__main__':
     import  torch
-    model = PointNet2_ssg_cut(13)
+    model = PointNet2_ssg_cut()
     xyz = torch.rand(6, 9, 2048)
     output = model(xyz)[0].detach().numpy()

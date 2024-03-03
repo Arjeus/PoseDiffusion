@@ -11,7 +11,8 @@ train:
     category: seen
     restart_num: 50
     lr: 0.0001
-    resume_ckpt: "/home/arj/code/models/posediffusion_ckpt/ckpt_000000"
+    resume_ckpt: "/home/arj/code/models/posediffusion_ckpt/ckpt_000035"
+    # resume_ckpt: False
     epochs: 50
     ckpt_interval: 5
     num_workers: 1
@@ -39,7 +40,7 @@ train:
     erase_aug: False
     batch_repeat: 10
 
-debug: False
+debug: True
 
 exp_dir: "/home/arj/code/models/posediffusion_ckpt/"
 
