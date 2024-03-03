@@ -60,6 +60,7 @@ def train_fn(cfg: DictConfig):
     # Data loading
     dataset, eval_dataset = get_co3d_dataset(cfg)
     dataloader = get_dataloader(cfg, dataset)
+
     eval_dataloader = get_dataloader(cfg, eval_dataset, is_eval=True)
 
     accelerator.print("length of train dataloader is: ", len(dataloader))
@@ -251,7 +252,6 @@ def _train_or_eval_fn(
 
     return True
 
-
 def get_dataloader(cfg, dataset, is_eval=False):
     """Utility function to get DataLoader."""
     prefix = "eval" if is_eval else "train"
@@ -261,15 +261,22 @@ def get_dataloader(cfg, dataset, is_eval=False):
         max_images=cfg.train.max_images // (2 if is_eval else 1),
         images_per_seq=cfg.train.images_per_seq,
     )
+    # dataloader = torch.utils.data.DataLoader(
+    #     dataset,
+    #     batch_sampler=batch_sampler,
+    #     num_workers=cfg.train.num_workers,
+    #     pin_memory=cfg.train.pin_memory,
+    #     persistent_workers=cfg.train.persistent_workers,
+    # )
     dataloader = torch.utils.data.DataLoader(
         dataset,
-        batch_sampler=batch_sampler,
+        batch_size=cfg.train.static_batch_size,
         num_workers=cfg.train.num_workers,
         pin_memory=cfg.train.pin_memory,
         persistent_workers=cfg.train.persistent_workers,
     )
-    dataloader.batch_sampler.drop_last = False
-    dataloader.batch_sampler.sampler = dataloader.batch_sampler
+    # dataloader.batch_sampler.drop_last = False
+    # dataloader.batch_sampler.sampler = dataloader.batch_sampler
     return dataloader
 
 
