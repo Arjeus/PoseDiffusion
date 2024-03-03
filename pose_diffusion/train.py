@@ -163,7 +163,8 @@ def _train_or_eval_fn(
     stat_set = "train" if training else "eval"
     for step, batch in enumerate(dataloader):
         # data preparation
-        images = batch["image"].to(accelerator.device)
+        #print length of batch
+        images = batch["image"].to(accelerator.device)   
         translation = batch["T"].to(accelerator.device)
         rotation = batch["R"].to(accelerator.device)
         fl = batch["fl"].to(accelerator.device)
@@ -275,6 +276,7 @@ def get_dataloader(cfg, dataset, is_eval=False):
         pin_memory=cfg.train.pin_memory,
         persistent_workers=cfg.train.persistent_workers,
     )
+    print("dataset length",len(dataset))
     # dataloader.batch_sampler.drop_last = False
     # dataloader.batch_sampler.sampler = dataloader.batch_sampler
     return dataloader

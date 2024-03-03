@@ -54,6 +54,8 @@ class Co3dDataset(Dataset):
         compute_optical=False,
         color_aug=True,
         erase_aug=False,
+        static_batch_size = 20,
+        dataset_length = [400,100],
     ):
         """
         Args:
@@ -99,7 +101,8 @@ class Co3dDataset(Dataset):
         self.split_name = split_name
         self.min_num_images = min_num_images
         self.foreground_crop = foreground_crop
-
+        self.static_batch_size = static_batch_size
+        self.dataset_length = dataset_length
         annotation_file = osp.join(self.CO3D_ANNOTATION_DIR, f"pcd_train_{split_name}.json")
         # open file and load annotation
         with open(annotation_file, "r") as fin:
@@ -181,7 +184,8 @@ class Co3dDataset(Dataset):
         print(f"Data size: {len(self)}")
 
     def __len__(self):
-        return len(self.sequence_list)
+        # return len(self.sequence_list)
+        return self.dataset_length[0] if self.split_name == "train" else self.dataset_length[1]
 
     def _jitter_bbox(self, bbox):
         # Random aug to bounding box shape
@@ -216,10 +220,13 @@ class Co3dDataset(Dataset):
         # Different from most pytorch datasets,
         # here we not only get index, but also a dynamic variable n_per_seq
         # supported by DynamicBatchSampler
-        index, n_per_seq = idx_N
+        # index, n_per_seq = idx_N
+        index = random.randint(0,1)
         sequence_name = self.sequence_list[index]
         metadata = self.rotations[sequence_name]
-        ids = np.random.choice(len(metadata), n_per_seq, replace=False)
+        # ids = np.random.choice(len(metadata), n_per_seq, replace=False)
+        ids = np.random.choice(len(metadata), self.static_batch_size, replace=False)
+
         return self.get_data(index=index, ids=ids)
 
     def get_data(self, index=None, sequence_name=None, ids=(0, 1), no_images=False, return_path = False):
@@ -227,7 +234,6 @@ class Co3dDataset(Dataset):
             sequence_name = self.sequence_list[index]
         metadata = self.rotations[sequence_name]
         category = self.category_map[sequence_name]
-
         annos = [metadata[i] for i in ids]
 
         if self.sort_by_filename:
@@ -268,7 +274,6 @@ class Co3dDataset(Dataset):
 
         new_fls = []
         new_pps = []
-
         for i, (anno, image) in enumerate(zip(annos, images)):
             w, h = 255, 255 #dummy values
             if self.center_box:

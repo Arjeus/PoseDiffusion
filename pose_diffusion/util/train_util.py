@@ -112,6 +112,8 @@ def get_co3d_dataset(cfg):
         "compute_optical": cfg.train.compute_optical,
         "color_aug": cfg.train.color_aug,
         "erase_aug": cfg.train.erase_aug,
+        "static_batch_size": cfg.train.static_batch_size,
+        "dataset_length": [cfg.train.len_train, cfg.train.len_eval],
     }
     # Create the train dataset
     dataset = Co3dDataset(**common_params, split="train")
