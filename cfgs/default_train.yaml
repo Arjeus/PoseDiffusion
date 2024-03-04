@@ -11,10 +11,10 @@ train:
     category: seen
     restart_num: 50
     lr: 0.0001
-    # resume_ckpt: "/home/arj/code/models/posediffusion_ckpt/ckpt_000049"
-    resume_ckpt: False
+    resume_ckpt: "/home/arjay55/code/datasets/pcd_train/ckpt_000049"
+    # resume_ckpt: False
     epochs: 50
-    ckpt_interval: 20
+    ckpt_interval: 1
     num_workers: 1
 
     eval_interval: 1
