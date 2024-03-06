@@ -54,7 +54,7 @@ class Co3dDataset(Dataset):
         compute_optical=False,
         color_aug=True,
         erase_aug=False,
-        static_batch_size = 20,
+        num_of_poses = 20,
         dataset_length = [400,100],
     ):
         """
@@ -101,7 +101,7 @@ class Co3dDataset(Dataset):
         self.split_name = split_name
         self.min_num_images = min_num_images
         self.foreground_crop = foreground_crop
-        self.static_batch_size = static_batch_size
+        self.num_of_poses = num_of_poses
         self.dataset_length = dataset_length
         annotation_file = osp.join(self.CO3D_ANNOTATION_DIR, f"pcd_train_{split_name}.json")
         # open file and load annotation
@@ -225,7 +225,7 @@ class Co3dDataset(Dataset):
         sequence_name = self.sequence_list[index]
         metadata = self.rotations[sequence_name]
         # ids = np.random.choice(len(metadata), n_per_seq, replace=False)
-        ids = np.random.choice(len(metadata), self.static_batch_size, replace=False)
+        ids = np.random.choice(len(metadata), self.num_of_poses, replace=False)
 
         return self.get_data(index=index, ids=ids)
 
@@ -235,7 +235,6 @@ class Co3dDataset(Dataset):
         metadata = self.rotations[sequence_name]
         category = self.category_map[sequence_name]
         annos = [metadata[i] for i in ids]
-
         if self.sort_by_filename:
             annos = sorted(annos, key=lambda x: x["filepath"])
 

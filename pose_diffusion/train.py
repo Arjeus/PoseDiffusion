@@ -271,7 +271,7 @@ def get_dataloader(cfg, dataset, is_eval=False):
     # )
     dataloader = torch.utils.data.DataLoader(
         dataset,
-        batch_size=cfg.train.static_batch_size,
+        batch_size=cfg.train.actual_batch_size,
         num_workers=cfg.train.num_workers,
         pin_memory=cfg.train.pin_memory,
         persistent_workers=cfg.train.persistent_workers,
