@@ -184,8 +184,8 @@ class Co3dDataset(Dataset):
         print(f"Data size: {len(self)}")
 
     def __len__(self):
-        # return len(self.sequence_list)
-        return self.dataset_length[0] if self.split_name == "train" else self.dataset_length[1]
+        return len(self.sequence_list)
+        # return self.dataset_length[0] if self.split_name == "train" else self.dataset_length[1]
 
     def _jitter_bbox(self, bbox):
         # Random aug to bounding box shape
@@ -217,17 +217,22 @@ class Co3dDataset(Dataset):
     def __getitem__(self, idx_N):
         """Fetch item by index and a dynamic variable n_per_seq."""
 
+        ### for static batch size ###########
+        # index = random.randint(0,1)
+        # sequence_name = self.sequence_list[index]
+        # metadata = self.rotations[sequence_name]
+        # ids = np.random.choice(len(metadata), self.num_of_poses, replace=False)
+        # return self.get_data(index=index, ids=ids)
+
+        ### for dynamic batch size ###########
         # Different from most pytorch datasets,
         # here we not only get index, but also a dynamic variable n_per_seq
         # supported by DynamicBatchSampler
-        # index, n_per_seq = idx_N
-        index = random.randint(0,1)
+        index, n_per_seq = idx_N
         sequence_name = self.sequence_list[index]
         metadata = self.rotations[sequence_name]
-        # ids = np.random.choice(len(metadata), n_per_seq, replace=False)
-        ids = np.random.choice(len(metadata), self.num_of_poses, replace=False)
-
-        return self.get_data(index=index, ids=ids)
+        ids = np.random.choice(len(metadata), n_per_seq, replace=False)
+        return self.get_data(index=index, ids=ids)        
 
     def get_data(self, index=None, sequence_name=None, ids=(0, 1), no_images=False, return_path = False):
         if sequence_name is None:

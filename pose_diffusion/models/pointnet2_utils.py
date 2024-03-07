@@ -196,7 +196,8 @@ class PointNetSetAbstraction(nn.Module):
         for i, conv in enumerate(self.mlp_convs):
             bn = self.mlp_bns[i]
             # set new_points to be float16
-            new_points = new_points.bfloat16()
+            # new_points = new_points.bfloat16()
+            new_points = new_points.float()
             new_points =  F.relu(bn(conv(new_points)))
 
         new_points = torch.max(new_points, 2)[0]
@@ -313,7 +314,8 @@ class PointNetFeaturePropagation(nn.Module):
         new_points = new_points.permute(0, 2, 1)
         for i, conv in enumerate(self.mlp_convs):
             bn = self.mlp_bns[i]
-            new_points = new_points.bfloat16()
+            # new_points = new_points.bfloat16()
+            new_points = new_points.float()
             new_points = F.relu(bn(conv(new_points)))
         return new_points
 

@@ -25,15 +25,10 @@ logger = logging.getLogger(__name__)
 
 
 class DynamicBatchSampler(BatchSampler):
-    @property
-    def batch_size(self):
-        # Return a fixed batch size or compute the average/expected batch size
-        fixed_batch_size = 5
-        return fixed_batch_size
-
-    def __init__(self, num_sequences, dataset_len=1024, max_images=10, images_per_seq=(3, 20)):
+    def __init__(self, num_sequences, dataset_len=1024, max_images=128, images_per_seq=(3, 20)):
         # Batch sampler with a dynamic number of sequences
         # max_images >= number_of_sequences * images_per_sequence
+
         self.max_images = max_images
         self.images_per_seq = list(range(images_per_seq[0], images_per_seq[1]))
         self.num_sequences = num_sequences
@@ -45,10 +40,10 @@ class DynamicBatchSampler(BatchSampler):
             n_per_seq = np.random.choice(self.images_per_seq)
             # number of sequences
             n_seqs = self.max_images // n_per_seq
+
             # randomly select sequences
             chosen_seq = self._capped_random_choice(self.num_sequences, n_seqs)
-            # print number of sequences and chosen sequences
-            # print(self.max_images, n_seqs, n_per_seq, chosen_seq)
+
             # get item
             batches = [(bidx, n_per_seq) for bidx in chosen_seq]
             yield batches

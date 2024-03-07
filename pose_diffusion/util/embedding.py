@@ -33,7 +33,7 @@ class TimeStepEmbedding(nn.Module):
         if self.dim % 2:
             embedding = torch.cat([embedding, torch.zeros_like(embedding[:, :1])], dim=-1)
 
-        embedding = embedding.to(torch.bfloat16)
+        # embedding = embedding.to(torch.bfloat16)
         output = self.linear(embedding)
         return output
 

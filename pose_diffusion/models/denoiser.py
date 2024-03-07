@@ -66,7 +66,7 @@ class Denoiser(nn.Module):
             z = torch.cat([z, cam_pivot_id], dim=-1)
 
         feed_feats = torch.cat([x_emb, t_emb, z], dim=-1)
-        feed_feats = feed_feats.bfloat16()
+        # feed_feats = feed_feats.bfloat16()
         input_ = self._first(feed_feats)
 
         feats_ = self._trunk(input_)

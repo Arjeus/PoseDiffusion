@@ -257,25 +257,25 @@ def get_dataloader(cfg, dataset, is_eval=False):
     """Utility function to get DataLoader."""
     prefix = "eval" if is_eval else "train"
     batch_sampler = DynamicBatchSampler(
-        len(dataset),
+        2, # must be 2 given the case
         dataset_len=getattr(cfg.train, f"len_{prefix}"),
         max_images=cfg.train.max_images // (2 if is_eval else 1),
         images_per_seq=cfg.train.images_per_seq,
     )
-    # dataloader = torch.utils.data.DataLoader(
-    #     dataset,
-    #     batch_sampler=batch_sampler,
-    #     num_workers=cfg.train.num_workers,
-    #     pin_memory=cfg.train.pin_memory,
-    #     persistent_workers=cfg.train.persistent_workers,
-    # )
     dataloader = torch.utils.data.DataLoader(
         dataset,
-        batch_size=cfg.train.actual_batch_size,
+        batch_sampler=batch_sampler,
         num_workers=cfg.train.num_workers,
         pin_memory=cfg.train.pin_memory,
         persistent_workers=cfg.train.persistent_workers,
     )
+    # dataloader = torch.utils.data.DataLoader(
+    #     dataset,
+    #     batch_size=cfg.train.actual_batch_size,
+    #     num_workers=cfg.train.num_workers,
+    #     pin_memory=cfg.train.pin_memory,
+    #     persistent_workers=cfg.train.persistent_workers,
+    # )
     print("dataset length",len(dataset))
     # dataloader.batch_sampler.drop_last = False
     # dataloader.batch_sampler.sampler = dataloader.batch_sampler
