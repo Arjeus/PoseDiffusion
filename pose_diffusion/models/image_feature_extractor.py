@@ -18,7 +18,7 @@ import torchvision
 
 import io
 import numpy as np
-
+import pdb
 logger = logging.getLogger(__name__)
 
 _RESNET_MEAN = [0.485, 0.456, 0.406]
@@ -32,14 +32,14 @@ class MultiScaleImageFeatureExtractor(nn.Module):
         self.scale_factors = scale_factors
 
         if "pointnet" in modelname:
-            self._net = torch.load("/home/arj/code/models/pointnet2.pth")
-            self._output_dim = self._net.norm.weight.shape[0]
+            self._net = torch.load("/home/arj/code/models/pointnet2_double.pth")
+            self._output_dim = self._net.norm.weight.shape[0] # ARJAY TODO: change the norm perhaps
         else:
             raise ValueError(f"Unknown model name {modelname}")
 
         for name, value in (("_resnet_mean", _RESNET_MEAN), ("_resnet_std", _RESNET_STD)):
             self.register_buffer(name, torch.FloatTensor(value).view(1, 3, 1, 1), persistent=False)
-
+        print("self freeze? {}".format(self.freeze))
         if self.freeze:
             for param in self.parameters():
                 param.requires_grad = False

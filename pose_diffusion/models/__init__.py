@@ -1,5 +1,5 @@
 from .pose_diffusion_model import PoseDiffusionModel
-from .pointnet2_sem_seg import PointNet2_ssg_cut, get_loss
+from .pointnet2_sem_seg import PointNet2_ssg_cut, PointNet2_ssg_double, get_loss
 from .pointnet2_utils import PointNetSetAbstraction, PointNetFeaturePropagation
 from .denoiser import Denoiser, TransformerEncoderWrapper
 from .gaussian_diffuser import GaussianDiffusion

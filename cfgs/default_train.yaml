@@ -11,7 +11,7 @@ train:
     category: seen
     restart_num: 50
     lr: 0.0001
-    resume_ckpt: "/home/arj/code/datasets/pcd_train/ckpt_000024"
+    resume_ckpt: "/home/arj/code/datasets/pcd_train/ckpt_000000"
     # resume_ckpt: False
     epochs: 25
     ckpt_interval: 5
@@ -24,7 +24,7 @@ train:
     len_train: 400
     len_eval: 100
 
-    max_images: 36 # must be twice that of images_per_seq
+    max_images: 14 # must be twice that of images_per_seq
     normalize_cameras: True
     persistent_workers: True
 
@@ -33,8 +33,8 @@ train:
     preload_image: False
     cudnnbenchmark: False
     first_camera_transform: True
-    min_num_images: 18
-    images_per_seq: [17,18] #does not work with DeepSpeed
+    min_num_images: 7
+    images_per_seq: [6,7] #does not work with DeepSpeed
     num_of_poses: 30
     compute_optical: True
     color_aug: False
@@ -51,7 +51,7 @@ MODEL:
     pose_encoding_type: absT_quaR_logFL
 
     IMAGE_FEATURE_EXTRACTOR: 
-        _target_: models.PointNet2_ssg_cut
+        _target_: models.PointNet2_ssg_double
         # modelname: "pointnet2_ssg_cut" #n/a
         # freeze: False
 
