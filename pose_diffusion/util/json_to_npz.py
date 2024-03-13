@@ -7,7 +7,7 @@ import math
 import pdb
 
 glob = glob.glob("site1_handheld3_pn_*.npy")
-pose_json_path = "/home/arjay55/code/datasets/pcd_train2/pose10.json"
+pose_json_path = "/home/arjay55/code/datasets/pcd_train2/bundle_adjusted_balm.json"
 
 # get number of elements in glob list
 n = len(glob)
