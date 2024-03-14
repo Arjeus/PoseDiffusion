@@ -257,7 +257,7 @@ def get_dataloader(cfg, dataset, is_eval=False):
     """Utility function to get DataLoader."""
     prefix = "eval" if is_eval else "train"
     batch_sampler = DynamicBatchSampler(
-        2, # must be 2 given the case
+        len(dataset), # will see if it will throw an error 03132024
         dataset_len=getattr(cfg.train, f"len_{prefix}"),
         max_images=cfg.train.max_images // (2 if is_eval else 1),
         images_per_seq=cfg.train.images_per_seq,

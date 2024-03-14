@@ -24,7 +24,7 @@ df = pd.read_csv('{}'.format(pose_json_path), sep=' ', header=None)
 dfquat = df.iloc[:math.floor(train_percent*n), -4:].apply(lambda x: R.from_quat(x).as_matrix(), axis=1)
 # convert each numpy array to list
 dfquat = dfquat.apply(lambda x: x.tolist())
-dftranslation = df.iloc[:math.floor(train_percent*n), :3].values
+dftranslation = df.iloc[:, :3].values
 dffocal = np.full((dftranslation.shape[0],2),3.0)
 #create a json file with the following format where out_arr is a list with key "filepath"
 # and dfquat, dftranslation, dffocal are numpy arrays with keys "R", "T", "focal_length" respectively
@@ -61,7 +61,7 @@ apple = []
 rot = dfquat.values.tolist()
 tran = dftranslation.tolist()
 foc = dffocal.tolist()
-for count in range(math.floor(df.shape[0]*train_percent)+1,df.shape[0]):
+for count in range(math.floor(df.shape[0]*train_percent),df.shape[0]):
     apple.append({"filepath":glob[count],"R":rot[count],"T":tran[count],"focal_length":foc[count],"principal_point":[-0.0, -0.0]})
 
 data = {"site1_handheld_3":apple}

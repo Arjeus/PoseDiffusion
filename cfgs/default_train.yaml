@@ -21,8 +21,8 @@ train:
 
     print_interval: 10
 
-    len_train: 400
-    len_eval: 100
+    len_train: 750
+    len_eval: 250
 
     max_images: 14 # must be twice that of images_per_seq
     normalize_cameras: False
