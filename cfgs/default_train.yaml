@@ -11,18 +11,18 @@ train:
     category: seen
     restart_num: 50
     lr: 0.0001
-    resume_ckpt: "/home/arj/code/datasets/pcd_train/ckpt_000005"
+    resume_ckpt: "/home/arj/code/datasets/pcd_train/ckpt_000006"
     # resume_ckpt: False
     epochs: 25
-    ckpt_interval: 5
+    ckpt_interval: 2
     num_workers: 1
 
     eval_interval: 1
 
     print_interval: 10
 
-    len_train: 750
-    len_eval: 250
+    len_train: 1200
+    len_eval: 400
 
     max_images: 14 # must be twice that of images_per_seq
     normalize_cameras: False
@@ -39,7 +39,7 @@ train:
     compute_optical: True
     color_aug: False
     erase_aug: False
-    batch_repeat: 10
+    batch_repeat: 0
     actual_batch_size: 1
 debug: True
 
