@@ -4,15 +4,16 @@ import glob
 import os  # Import for path handling
 import pdb
 
-mydir = "/home/arjay55/code/datasets/pcd_train2"
-pcd_files = glob.glob("{}/*.pcd".format(mydir))
+mydir = "/home/arjay55/code/datasets/pcd_train3"
+pcd_files = sorted(glob.glob("{}/*.pcd".format(mydir)))
 # delete all npy files
 for file in glob.glob("{}/*.npy".format(mydir)):
     os.remove(file)
 
 def get_unlabeled_data(folder):
     unlabeled_data = []
-    for file in glob.glob(os.path.join(folder, "*.npy")):
+    npy_files = sorted(glob.glob(os.path.join(folder, "*.npy")))
+    for file in npy_files:
         data = np.load(file)
         xyz = data[:, :3]
         unlabeled_data.append(xyz)
@@ -92,6 +93,6 @@ for id in range(len(scene_points)):
     batch_data = batch_data[0]
     batch_data = batch_data.transpose()
     # save to npy
-    filename = "{}/site1_handheld3_pn_{}.npy".format(mydir,id)
+    filename = "{}/Bldg1_Stage1_{:04d}.npy".format(mydir,id)
     np.save(filename, batch_data)
     
