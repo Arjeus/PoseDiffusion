@@ -4,15 +4,15 @@ exp_name: exp001_train
 
 train:
     # Please Specify Your Own Path
-    CO3D_DIR: "/home/arj/code/datasets/pcd_train"
-    CO3D_ANNOTATION_DIR: "/home/arj/code/datasets/pcd_train"
+    CO3D_DIR: "/home/ubuntu/code/datasets/pcd_train"
+    CO3D_ANNOTATION_DIR: "/home/ubuntu/code/datasets/pcd_train"
     
     img_size: 224
     category: seen
     restart_num: 50
     lr: 0.0001
-    resume_ckpt: "/home/arj/code/datasets/pcd_train/ckpt_000006"
-    # resume_ckpt: False
+    # resume_ckpt: "/home/arj/code/datasets/pcd_train/ckpt_000006"
+    resume_ckpt: False
     epochs: 25
     ckpt_interval: 2
     num_workers: 1
@@ -21,8 +21,8 @@ train:
 
     print_interval: 10
 
-    len_train: 1200
-    len_eval: 400
+    len_train: 1500
+    len_eval: 500
 
     max_images: 14 # must be twice that of images_per_seq
     normalize_cameras: False
@@ -43,7 +43,7 @@ train:
     actual_batch_size: 1
 debug: True
 
-exp_dir: "/home/arj/code/datasets/pcd_train"
+exp_dir: "/home/ubuntu/code/datasets/pcd_train"
 
 MODEL:
     _target_: models.PoseDiffusionModel
