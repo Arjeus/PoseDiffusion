@@ -11,10 +11,10 @@ train:
     category: seen
     restart_num: 50
     lr: 0.0001
-    # resume_ckpt: "/home/arj/code/datasets/pcd_train/ckpt_000006"
-    resume_ckpt: False
+    resume_ckpt: "/home/ubuntu/code/datasets/pcd_train/ckpt_000002"
+    # resume_ckpt: False
     epochs: 25
-    ckpt_interval: 2
+    ckpt_interval: 1
     num_workers: 1
 
     eval_interval: 1
@@ -24,8 +24,8 @@ train:
     len_train: 1500
     len_eval: 500
 
-    max_images: 14 # must be twice that of images_per_seq
-    normalize_cameras: False
+    max_images: 22 # must be twice that of images_per_seq
+    normalize_cameras: True
     persistent_workers: True
 
     pin_memory: False
@@ -33,8 +33,8 @@ train:
     preload_image: False
     cudnnbenchmark: False
     first_camera_transform: True
-    min_num_images: 7
-    images_per_seq: [6,7] #does not work with DeepSpeed
+    min_num_images: 11
+    images_per_seq: [10,11] #does not work with DeepSpeed
     num_of_poses: 30
     compute_optical: True
     color_aug: False
