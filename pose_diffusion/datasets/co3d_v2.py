@@ -394,10 +394,16 @@ def square_bbox(bbox, padding=0.0, astype=None):
 
 
 TRAINING_CATEGORIES = [
-    "apple",
     "site1_handheld_3",
+    "site3_handheld_2",
+    "Bldg1_Stage1",
+    "bldg1_stage2",
+    "bldg1_stage3",
+    "bldg2_stage1",
+    "bldg2_stage2",
+    "bldg2_stage3",
 ]
 
-TEST_CATEGORIES = ["apple","site1_handheld_3"]
+TEST_CATEGORIES = ["apple","site1_handheld_3","site3_handheld_2","Bldg1_Stage1","bldg1_stage2","bldg1_stage3","bldg2_stage1","bldg2_stage2","bldg2_stage3"]
 
-DEBUG_CATEGORIES = ["apple","site1_handheld_3"]
+DEBUG_CATEGORIES = ["apple","site1_handheld_3","site3_handheld_2","Bldg1_Stage1","bldg1_stage2","bldg1_stage3","bldg2_stage1","bldg2_stage2","bldg2_stage3"]
