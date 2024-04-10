@@ -28,7 +28,7 @@ from einops.layers.torch import Rearrange
 
 from tqdm.auto import tqdm
 from typing import Any, Dict, List, Optional, Tuple, Union
-
+import pdb
 # constants
 
 ModelPrediction = namedtuple("ModelPrediction", ["pred_noise", "pred_x_start"])
@@ -284,7 +284,6 @@ class GaussianDiffusion(nn.Module):
     @torch.no_grad()
     def p_sample_loop(self, shape, z: torch.Tensor, cond_fn=None, cond_start_step=0):
         batch, device = shape[0], self.betas.device
-
         # Init here
         pose = torch.randn(shape, device=device)
 
@@ -298,6 +297,8 @@ class GaussianDiffusion(nn.Module):
             pose_process.append(pose.unsqueeze(0))
 
         return pose, torch.cat(pose_process)
+
+    # TODO external initial poses function
 
     @torch.no_grad()
     def sample(self, shape, z, cond_fn=None, cond_start_step=0):

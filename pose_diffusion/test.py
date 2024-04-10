@@ -58,12 +58,13 @@ def test_fn(cfg: DictConfig):
     model = accelerator.prepare(model)
 
     if cfg.test.resume_ckpt:
-        checkpoint = torch.load(cfg.test.resume_ckpt)
-        try:
-            model.load_state_dict(prefix_with_module(checkpoint), strict=True)
-        except:
-            model.load_state_dict(checkpoint, strict=True)
+        # checkpoint = torch.load(cfg.test.resume_ckpt)
+        # try:
+        #     model.load_state_dict(prefix_with_module(checkpoint), strict=True)
+        # except:
+        #     model.load_state_dict(checkpoint, strict=True)
 
+        accelerator.load_state(cfg.test.resume_ckpt)
         accelerator.print(f"Successfully resumed from {cfg.test.resume_ckpt}")
 
 

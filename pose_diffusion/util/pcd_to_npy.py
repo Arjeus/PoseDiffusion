@@ -4,7 +4,7 @@ import glob
 import os  # Import for path handling
 import pdb
 
-mydir = "/home/arjay55/code/datasets/pcd_train3"
+mydir = "/home/arjay55/code/datasets/pcd_train_bldg2_stage5"
 pcd_files = sorted(glob.glob("{}/*.pcd".format(mydir)))
 # delete all npy files
 for file in glob.glob("{}/*.npy".format(mydir)):
@@ -93,6 +93,6 @@ for id in range(len(scene_points)):
     batch_data = batch_data[0]
     batch_data = batch_data.transpose()
     # save to npy
-    filename = "{}/Bldg1_Stage1_{:04d}.npy".format(mydir,id)
+    filename = "{}/Bldg2_Stage5_{:04d}.npy".format(mydir,id)
     np.save(filename, batch_data)
     

@@ -393,8 +393,7 @@ def square_bbox(bbox, padding=0.0, astype=None):
     return square_bbox
 
 
-TRAINING_CATEGORIES = [
-    "site1_handheld_3",
+TRAINING_CATEGORIES = ["site1_handheld_3",
     "site3_handheld_2",
     "Bldg1_Stage1",
     "bldg1_stage2",
@@ -402,8 +401,11 @@ TRAINING_CATEGORIES = [
     "bldg2_stage1",
     "bldg2_stage2",
     "bldg2_stage3",
+    "Bldg1_Scene1",
+    "Bldg2_Stage5",
+    "Bldg2_Stage4",
 ]
 
-TEST_CATEGORIES = ["apple","site1_handheld_3","site3_handheld_2","Bldg1_Stage1","bldg1_stage2","bldg1_stage3","bldg2_stage1","bldg2_stage2","bldg2_stage3"]
+TEST_CATEGORIES = ["site1_handheld_3","site3_handheld_2","Bldg1_Stage1","bldg1_stage2","bldg1_stage3","bldg2_stage1","bldg2_stage2","bldg2_stage3","Bldg1_Scene65","Bldg2_Stage5","Bldg2_Stage4"]
 
-DEBUG_CATEGORIES = ["apple","site1_handheld_3","site3_handheld_2","Bldg1_Stage1","bldg1_stage2","bldg1_stage3","bldg2_stage1","bldg2_stage2","bldg2_stage3"]
+DEBUG_CATEGORIES = ["site1_handheld_3","site3_handheld_2","Bldg1_Stage1","bldg1_stage2","bldg1_stage3","bldg2_stage1","bldg2_stage2","bldg2_stage3","Bldg1_Scene1","Bldg2_Stage5","Bldg2_Stage4"]

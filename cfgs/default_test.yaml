@@ -6,12 +6,12 @@ exp_name: exp001_test
 
 test:
     # Please Specify Your Own Path
-    CO3D_DIR: "/datasets01/co3dv2/080422/"
-    CO3D_ANNOTATION_DIR: "/fsx-repligen/jianyuan/datasets/co3d_relpose/"
-    resume_ckpt: "/data/home/jianyuan/src/PoseDiffusion/pose_diffusion/tmp/co3d_model_Apr16.pth"
+    CO3D_DIR: "/home/arj/code/datasets/pcd_train"
+    CO3D_ANNOTATION_DIR: "/home/arj/code/datasets/pcd_train"
+    resume_ckpt: "/home/arj/code/datasets/pcd_train/ckpt_000002"
     
     random_order: True
-    num_frames: 10
+    num_frames: 20
 
     ##########################
 
@@ -24,11 +24,11 @@ test:
     preload_image: False
     cudnnbenchmark: False
     first_camera_transform: True
-    min_num_images: 50
+    min_num_images: 20
     compute_optical: True
 
 GGS:
-    enable: True
+    enable: False
     start_step: 10
     learning_rate: 0.01
     iter_num: 100
@@ -47,17 +47,17 @@ MODEL:
     pose_encoding_type: absT_quaR_logFL
 
     IMAGE_FEATURE_EXTRACTOR: 
-        _target_: models.MultiScaleImageFeatureExtractor
-        modelname: "dino_vits16"
-        freeze: False
+        _target_: models.PointNet2_ssg_double
+        # modelname: "dino_vits16"
+        # freeze: False
 
     DENOISER: 
         _target_: models.Denoiser
         TRANSFORMER:
             _target_:               models.TransformerEncoderWrapper
-            d_model:                512
+            d_model:                256
             nhead:                  4
-            dim_feedforward:        1024
+            dim_feedforward:        512
             num_encoder_layers:     8
             dropout:                0.1
             batch_first:            True

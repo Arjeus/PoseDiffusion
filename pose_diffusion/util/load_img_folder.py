@@ -26,25 +26,25 @@ def load_and_preprocess_images(folder_path  = None, image_size: int = 224, image
     scales = []
     
     for path in image_paths:
-        image = _load_image(path)
-        image, bbox_xyxy, min_hw = _center_crop_square(image)
-        minscale = image_size / min_hw
+        image = np.load(path)
+        # image, bbox_xyxy, min_hw = _center_crop_square(image)
+        # minscale = image_size / min_hw
 
-        imre = F.interpolate(
-            torch.from_numpy(image)[None],
-            size=(image_size, image_size),
-            mode=mode,
-            align_corners=False if mode == "bilinear" else None,
-        )[0]
+        # imre = F.interpolate(
+        #     torch.from_numpy(image)[None],
+        #     size=(image_size, image_size),
+        #     mode=mode,
+        #     align_corners=False if mode == "bilinear" else None,
+        # )[0]
 
-        images.append(imre.numpy())
-        bboxes_xyxy.append(bbox_xyxy.numpy())
-        scales.append(minscale)
+        images.append(image)
+        bboxes_xyxy.append(np.array([0, 0, image_size, image_size]))
+        scales.append(1.0)
 
     images_tensor = torch.from_numpy(np.stack(images))
 
     # assume all the images have the same shape for GGS
-    image_info = {"size": (min_hw, min_hw), "bboxes_xyxy": np.stack(bboxes_xyxy), "resized_scales": np.stack(scales)}
+    image_info = {"size": (image_size, image_size), "bboxes_xyxy": np.stack(bboxes_xyxy), "resized_scales": np.stack(scales)}
     return images_tensor, image_info
 
 
