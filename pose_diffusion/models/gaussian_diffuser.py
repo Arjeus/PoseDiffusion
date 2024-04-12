@@ -282,10 +282,15 @@ class GaussianDiffusion(nn.Module):
         return pred, x_start
 
     @torch.no_grad()
-    def p_sample_loop(self, shape, z: torch.Tensor, cond_fn=None, cond_start_step=0):
+    def p_sample_loop(self, shape, z: torch.Tensor, cond_fn=None, cond_start_step=0, initial_pose=None):
         batch, device = shape[0], self.betas.device
         # Init here
-        pose = torch.randn(shape, device=device)
+        if initial_pose is None:
+            # Initialize with random noise if no initial pose is provided
+            pose = torch.randn(shape, device=device)
+        else:
+            # Use the provided initial pose
+            pose = initial_pose.to(device)
 
         x_start = None
 
@@ -301,17 +306,17 @@ class GaussianDiffusion(nn.Module):
     # TODO external initial poses function
 
     @torch.no_grad()
-    def sample(self, shape, z, cond_fn=None, cond_start_step=0):
+    def sample(self, shape, z, init_poses=None, cond_fn=None, cond_start_step=0, ):
         # TODO: add more variants
         sample_fn = self.p_sample_loop
-        return sample_fn(shape, z=z, cond_fn=cond_fn, cond_start_step=cond_start_step)
+        return sample_fn(shape, z=z, cond_fn=cond_fn, cond_start_step=cond_start_step, initial_pose=init_poses)
 
     def p_losses(self, x_start, t, z=None, noise=None):
         noise = default(noise, lambda: torch.randn_like(x_start))
         # noise sample
         x = self.q_sample(x_start=x_start, t=t, noise=noise)
         model_out = self.model(x, t, z)
-
+        
         if self.objective == "pred_noise":
             target = noise
             x_0_pred = self.predict_start_from_noise(x, t, model_out)

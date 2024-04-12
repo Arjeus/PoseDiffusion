@@ -85,7 +85,10 @@ class Co3dDataset(Dataset):
             split_name = "train"
         elif split == "test":
             split_name = "test"
+        elif split_name == "test_initial":
+            split_name = "test_initial"
 
+        self.split_name = split_name
         self.low_quality_translations = []
         self.rotations = {}
         self.category_map = {}
@@ -126,19 +129,36 @@ class Co3dDataset(Dataset):
                         break
 
                     # Ignore all unnecessary information.
-                    
-                    filtered_data.append(
-                        {
-                            "filepath": data["filepath"],
-                            # "bbox": data["bbox"],
-                            "R": data["R"],
-                            "T": data["T"],
-                            "focal_length": data["focal_length"], # will eventually remove this too
-                            "principal_point": data["principal_point"],
-                        }
-                    )
+
+                    # if key "R_init" exists, then append this to filtered_data
+                    if "R_init" in data:
+                        filtered_data.append(
+                            {
+                                "filepath": data["filepath"],
+                                # "bbox": data["bbox"],
+                                "R": data["R"],
+                                "T": data["T"],
+                                "focal_length": data["focal_length"], # will eventually remove this too
+                                "principal_point": data["principal_point"],
+                                "R_init": data["R_init"],
+                                "T_init": data["T_init"],
+                            }
+                        )
+
+                    else: 
+                        filtered_data.append(
+                            {
+                                "filepath": data["filepath"],
+                                # "bbox": data["bbox"],
+                                "R": data["R"],
+                                "T": data["T"],
+                                "focal_length": data["focal_length"], # will eventually remove this too
+                                "principal_point": data["principal_point"],
+                            }
+                        )
                 if not bad_seq:
                     self.rotations[seq_name] = filtered_data
+            # 
 
             self.sequence_list = list(self.rotations.keys())
             self.split = split
@@ -228,13 +248,20 @@ class Co3dDataset(Dataset):
         # Different from most pytorch datasets,
         # here we not only get index, but also a dynamic variable n_per_seq
         # supported by DynamicBatchSampler
+        if self.split == "test_initial":
+            index, n_per_seq = idx_N
+            sequence_name = self.sequence_list[index]
+            metadata = self.rotations[sequence_name]
+            ids = np.arange(len(metadata))  # Select all images
+            return self.get_data(index=index, ids=ids)
+
         index, n_per_seq = idx_N
         sequence_name = self.sequence_list[index]
         metadata = self.rotations[sequence_name]
         ids = np.random.choice(len(metadata), n_per_seq, replace=False)
         return self.get_data(index=index, ids=ids)        
 
-    def get_data(self, index=None, sequence_name=None, ids=(0, 1), no_images=False, return_path = False):
+    def get_data(self, index=None, sequence_name=None, ids=(0, 1), no_images=False, return_path = False, test_init = False):
         if sequence_name is None:
             sequence_name = self.sequence_list[index]
         metadata = self.rotations[sequence_name]
@@ -245,10 +272,13 @@ class Co3dDataset(Dataset):
 
         images = []
         rotations = []
+        translations_init = []
+        rotations_init = []
         translations = []
         focal_lengths = []
         principal_points = []
         image_paths = []
+        init_values = []
         
         for anno in annos:
             filepath = anno["filepath"]
@@ -269,6 +299,8 @@ class Co3dDataset(Dataset):
             images.append(torch.from_numpy(image))
             rotations.append(torch.tensor(anno["R"]))
             translations.append(torch.tensor(anno["T"]))
+            translations_init.append(torch.tensor(anno["T_init"]))
+            rotations_init.append(torch.tensor(anno["R_init"]))
             focal_lengths.append(torch.tensor(anno["focal_length"]))
             principal_points.append(torch.tensor(anno["principal_point"]))
             image_paths.append(image_path)
@@ -321,17 +353,29 @@ class Co3dDataset(Dataset):
         new_fls = torch.stack(new_fls)
         new_pps = torch.stack(new_pps)
 
-        if self.normalize_cameras:
-            cameras = PerspectiveCameras(
+        if self.normalize_cameras: 
+            cameras = PerspectiveCameras( # TODO: what does this do?
                 focal_length=new_fls.numpy(),
                 principal_point=new_pps.numpy(),
                 R=[data["R"] for data in annos],
                 T=[data["T"] for data in annos],
             )
+            if self.split_name == "test_initial":
+                cameras_init = PerspectiveCameras( # TODO: what does this do?
+                    focal_length=new_fls.numpy(),
+                    principal_point=new_pps.numpy(),
+                    R=[data["R_init"] for data in annos],
+                    T=[data["T_init"] for data in annos],
+                )
 
             normalized_cameras = normalize_cameras(
                 cameras, compute_optical=self.compute_optical, first_camera=self.first_camera_transform
             )
+
+            if self.split_name == "test_initial":
+                normalized_cameras_init = normalize_cameras(
+                    cameras_init, compute_optical=self.compute_optical, first_camera=self.first_camera_transform
+                )
 
             if normalized_cameras == -1:
                 print("Error in normalizing cameras: camera scale was 0")
@@ -339,10 +383,19 @@ class Co3dDataset(Dataset):
 
             batch["R"] = normalized_cameras.R
             batch["T"] = normalized_cameras.T
+
+            if self.split_name == "test_initial":
+                batch["R_init"] = normalized_cameras_init.R
+                batch["T_init"] = normalized_cameras_init.T
+
             batch["crop_params"] = torch.stack(crop_parameters)
             batch["R_original"] = torch.stack([torch.tensor(anno["R"]) for anno in annos])
             batch["T_original"] = torch.stack([torch.tensor(anno["T"]) for anno in annos])
 
+            if self.split_name == "test_initial":
+                batch["R_init_original"] = torch.stack([torch.tensor(anno["R_init"]) for anno in annos])
+                batch["T_init_original"] = torch.stack([torch.tensor(anno["T_init"]) for anno in annos])
+                        
             batch["fl"] = normalized_cameras.focal_length
             batch["pp"] = normalized_cameras.principal_point
 
@@ -354,6 +407,10 @@ class Co3dDataset(Dataset):
         else:
             batch["R"] = torch.stack(rotations)
             batch["T"] = torch.stack(translations)
+            if self.split_name == "test_initial":
+                batch["R_init"] = torch.stack(rotations_init)
+                batch["T_init"] = torch.stack(translations_init)
+
             batch["crop_params"] = torch.stack(crop_parameters)
             batch["fl"] = new_fls
             batch["pp"] = new_pps
@@ -368,7 +425,7 @@ class Co3dDataset(Dataset):
 
         batch["image"] = images
 
-        if return_path:
+        if return_path
             return batch, image_paths
         return batch
 

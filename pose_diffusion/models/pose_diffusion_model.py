@@ -85,11 +85,13 @@ class PoseDiffusionModel(nn.Module):
     def forward(
         self,
         image: torch.Tensor,
+        init_poses: torch.Tensor = None,
         gt_cameras: Optional[CamerasBase] = None,
         sequence_name: Optional[List[str]] = None,
         cond_fn=None,
         cond_start_step=0,
         training=True,
+        test_init=False,
         batch_repeat=-1,
     ):
         """
@@ -134,14 +136,29 @@ class PoseDiffusionModel(nn.Module):
             )
 
             return diffusion_results
-        else:
+        elif test_init:
             B, N, _ = z.shape
 
+            target_shape = [B, N, 1]
+
+            # sampling
+            (pose_encoding, pose_encoding_diffusion_samples) = self.diffuser.sample(
+                shape=target_shape, init_poses=init_poses,  z=z, cond_fn=cond_fn, cond_start_step=cond_start_step
+            )
+            # convert the encoded representation to PyTorch3D cameras
+            pred_cameras = pose_encoding_to_camera(pose_encoding, pose_encoding_type=self.pose_encoding_type)
+
+            diffusion_results = {"pred_cameras": pred_cameras, "z": z}
+
+            return diffusion_results
+        else:
+            B, N, _ = z.shape
+            pdb.set_trace()
             target_shape = [B, N, self.target_dim]
 
             # sampling
             (pose_encoding, pose_encoding_diffusion_samples) = self.diffuser.sample(
-                shape=target_shape, z=z, cond_fn=cond_fn, cond_start_step=cond_start_step
+                shape=target_shape, z=z, init_poses=init_poses,  cond_fn=cond_fn, cond_start_step=cond_start_step
             )
 
             # convert the encoded representation to PyTorch3D cameras

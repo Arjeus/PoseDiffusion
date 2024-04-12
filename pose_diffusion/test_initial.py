@@ -10,8 +10,9 @@ from collections import OrderedDict
 from functools import partial
 from typing import Dict, List, Optional, Union
 from multiprocessing import Pool
-
 import pdb
+
+
 import hydra
 import torch
 import numpy as np
@@ -28,14 +29,13 @@ from util.geometry_guided_sampling import geometry_guided_sampling
 from util.metric import camera_to_rel_deg, calculate_auc_np
 from util.load_img_folder import load_and_preprocess_images
 from util.train_util import (
-    get_co3d_dataset_test,
+    get_co3d_dataset_test_initial,
     set_seed_and_print,
 )
 
 
 
-
-@hydra.main(config_path="../cfgs/", config_name="default_test")
+@hydra.main(config_path="../cfgs/", config_name="default_test_initial")
 def test_fn(cfg: DictConfig):
     OmegaConf.set_struct(cfg, False)
     accelerator = Accelerator(even_batches=False, device_placement=False)
@@ -147,7 +147,7 @@ def _test_one_category(model, category, cfg, num_frames, random_order, accelerat
     print(f"******************************** test on {category} ********************************")
 
     # Data loading
-    test_dataset = get_co3d_dataset_test(cfg, category = category)
+    test_dataset = get_co3d_dataset_test_initial(cfg, category = category)
     
     category_error_dict = {"rError":[], "tError":[]}
     
@@ -160,11 +160,11 @@ def _test_one_category(model, category, cfg, num_frames, random_order, accelerat
             continue
         
         if random_order:
-            ids = np.random.choice(len(metadata), num_frames, replace=False)
+            ids = len(metadata)
         else:
             raise ValueError("Please specify your own sampling strategy")
             
-        batch, image_paths = test_dataset.get_data(sequence_name=seq_name, ids=ids, return_path = True)
+        batch, image_paths= test_dataset.get_data(sequence_name=seq_name, ids=ids, return_path = True, test_init= True)
 
         # Use load_and_preprocess_images() here instead of using batch["image"] as
         #       images = batch["image"].to(accelerator.device)
@@ -172,7 +172,7 @@ def _test_one_category(model, category, cfg, num_frames, random_order, accelerat
         # TODO combine this into Co3D V2 dataset
         images, image_info = load_and_preprocess_images(image_paths = image_paths, image_size = cfg.test.img_size)
         images = images.to(accelerator.device)
-        pdb.set_trace()
+        
         if cfg.GGS.enable:
             kp1, kp2, i12 = extract_match(image_paths = image_paths, image_info = image_info)
             
@@ -208,9 +208,10 @@ def _test_one_category(model, category, cfg, num_frames, random_order, accelerat
         # expand to 1 x N x 3 x H x W
         images = images.unsqueeze(0)
         batch_size = len(images)
-
+        # process batch["T_init"] and batch["R_init"] to a initial_poses tensor, in the form of tx,tys,tz, qw qx qy qz
+        initial_poses = torch.cat([batch["T_init"], batch["R_init"]], dim=1).to(accelerator.device)
         with torch.no_grad():
-            predictions = model(images, cond_fn=cond_fn, cond_start_step=cfg.GGS.start_step, training=False, test_init = False)
+            predictions = model(images, initial_poses, cond_fn=cond_fn, cond_start_step=cfg.GGS.start_step, training=False, test_init = True)
 
         pred_cameras = predictions["pred_cameras"]
         

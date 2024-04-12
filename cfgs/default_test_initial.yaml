@@ -1,7 +1,7 @@
 seed: 0
 exp_name: exp001_test
 
-test:
+test_initial:
     # Please Specify Your Own Path
     CO3D_DIR: "/home/arj/code/datasets/pcd_train"
     CO3D_ANNOTATION_DIR: "/home/arj/code/datasets/pcd_train"
@@ -13,7 +13,7 @@ test:
     ##########################
 
     img_size: 224
-    category: seen
+    category: unseen
 
     normalize_cameras: True
     persistent_workers: True
