@@ -299,8 +299,10 @@ class Co3dDataset(Dataset):
             images.append(torch.from_numpy(image))
             rotations.append(torch.tensor(anno["R"]))
             translations.append(torch.tensor(anno["T"]))
-            translations_init.append(torch.tensor(anno["T_init"]))
-            rotations_init.append(torch.tensor(anno["R_init"]))
+            # append to translations_init and rotations_init if anno["T_init"] and anno["R_init"] exist
+            if "T_init" in anno:
+                translations_init.append(torch.tensor(anno["T_init"]))
+                rotations_init.append(torch.tensor(anno["R_init"]))    
             focal_lengths.append(torch.tensor(anno["focal_length"]))
             principal_points.append(torch.tensor(anno["principal_point"]))
             image_paths.append(image_path)
@@ -425,7 +427,7 @@ class Co3dDataset(Dataset):
 
         batch["image"] = images
 
-        if return_path
+        if return_path:
             return batch, image_paths
         return batch
 
