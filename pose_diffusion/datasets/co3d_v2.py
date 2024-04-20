@@ -77,6 +77,9 @@ class Co3dDataset(Dataset):
         
         if "all" in category:
             category = TRAINING_CATEGORIES + TEST_CATEGORIES
+
+        if "unknown" in category:
+            category = TRAINING_CATEGORIES + TEST_CATEGORIES
         
         category = sorted(category)
         self.category = category
@@ -85,7 +88,7 @@ class Co3dDataset(Dataset):
             split_name = "train"
         elif split == "test":
             split_name = "test"
-        elif split_name == "test_initial":
+        elif split == "test_initial":
             split_name = "test_initial"
 
         self.split_name = split_name
@@ -262,6 +265,7 @@ class Co3dDataset(Dataset):
         return self.get_data(index=index, ids=ids)        
 
     def get_data(self, index=None, sequence_name=None, ids=(0, 1), no_images=False, return_path = False, test_init = False):
+        pdb.set_trace()
         if sequence_name is None:
             sequence_name = self.sequence_list[index]
         metadata = self.rotations[sequence_name]
@@ -468,3 +472,5 @@ TRAINING_CATEGORIES = ["site1_handheld_3",
 TEST_CATEGORIES = ["site1_handheld_3","site3_handheld_2","Bldg1_Stage1","bldg1_stage2","bldg1_stage3","bldg2_stage1","bldg2_stage2","bldg2_stage3","Bldg1_Scene65","Bldg2_Stage5","Bldg2_Stage4"]
 
 DEBUG_CATEGORIES = ["site1_handheld_3","site3_handheld_2","Bldg1_Stage1","bldg1_stage2","bldg1_stage3","bldg2_stage1","bldg2_stage2","bldg2_stage3","Bldg1_Scene1","Bldg2_Stage5","Bldg2_Stage4"]
+
+UNKNOWN_CATEGORIES = ["site1_handheld_3_end"]

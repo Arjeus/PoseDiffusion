@@ -23,7 +23,7 @@ from pytorch3d.ops import corresponding_cameras_alignment
 from pytorch3d.renderer.cameras import PerspectiveCameras
 from pytorch3d.vis.plotly_vis import plot_scene
 
-from datasets.co3d_v2 import TRAINING_CATEGORIES, TEST_CATEGORIES, DEBUG_CATEGORIES
+from datasets.co3d_v2 import TRAINING_CATEGORIES, TEST_CATEGORIES, DEBUG_CATEGORIES, UNKNOWN_CATEGORIES
 from util.match_extraction import extract_match
 from util.geometry_guided_sampling import geometry_guided_sampling
 from util.metric import camera_to_rel_deg, calculate_auc_np
@@ -43,7 +43,7 @@ def test_fn(cfg: DictConfig):
     # Print configuration and accelerator state
     accelerator.print("Model Config:", OmegaConf.to_yaml(cfg), accelerator.state)
 
-    torch.backends.cudnn.benchmark = cfg.test.cudnnbenchmark if not cfg.debug else False
+    torch.backends.cudnn.benchmark = cfg.test_initial.cudnnbenchmark if not cfg.debug else False
     if cfg.debug:
         accelerator.print("********DEBUG MODE********")
         torch.backends.cudnn.deterministic = True
@@ -57,18 +57,18 @@ def test_fn(cfg: DictConfig):
     # Accelerator setup
     model = accelerator.prepare(model)
 
-    if cfg.test.resume_ckpt:
+    if cfg.test_initial.resume_ckpt:
         # checkpoint = torch.load(cfg.test.resume_ckpt)
         # try:
         #     model.load_state_dict(prefix_with_module(checkpoint), strict=True)
         # except:
         #     model.load_state_dict(checkpoint, strict=True)
 
-        accelerator.load_state(cfg.test.resume_ckpt)
-        accelerator.print(f"Successfully resumed from {cfg.test.resume_ckpt}")
+        accelerator.load_state(cfg.test_initial.resume_ckpt)
+        accelerator.print(f"Successfully resumed from {cfg.test_initial.resume_ckpt}")
 
 
-    categories = cfg.test.category
+    categories = cfg.test_initial.category
 
     if "seen" in categories:
         categories = TRAINING_CATEGORIES
@@ -78,6 +78,9 @@ def test_fn(cfg: DictConfig):
     
     if "debug" in categories:
         categories = DEBUG_CATEGORIES
+
+    if "unknown" in categories:
+        categories = UNKNOWN_CATEGORIES
     
     if "all" in categories:
         categories = TRAINING_CATEGORIES + TEST_CATEGORIES
@@ -103,8 +106,8 @@ def test_fn(cfg: DictConfig):
             model = model,
             category = category,
             cfg = cfg,
-            num_frames = cfg.test.num_frames,
-            random_order = cfg.test.random_order, 
+            num_frames = cfg.test_initial.num_frames,
+            random_order = cfg.test_initial.random_order, 
             accelerator = accelerator,
         )
         
@@ -170,7 +173,7 @@ def _test_one_category(model, category, cfg, num_frames, random_order, accelerat
         #       images = batch["image"].to(accelerator.device)
         # because we need bboxes_xyxy and resized_scales for GGS
         # TODO combine this into Co3D V2 dataset
-        images, image_info = load_and_preprocess_images(image_paths = image_paths, image_size = cfg.test.img_size)
+        images, image_info = load_and_preprocess_images(image_paths = image_paths, image_size = cfg.test_initial.img_size)
         images = images.to(accelerator.device)
         
         if cfg.GGS.enable:

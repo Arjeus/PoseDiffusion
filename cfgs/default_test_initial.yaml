@@ -5,7 +5,7 @@ test_initial:
     # Please Specify Your Own Path
     CO3D_DIR: "/home/arj/code/datasets/pcd_train"
     CO3D_ANNOTATION_DIR: "/home/arj/code/datasets/pcd_train"
-    resume_ckpt: "/home/arj/code/datasets/pcd_train/ckpt_000003"
+    resume_ckpt: "/home/arj/code/datasets/pcd_train/ckpt_000000"
     
     random_order: True
     num_frames: 20
@@ -13,7 +13,7 @@ test_initial:
     ##########################
 
     img_size: 224
-    category: unseen
+    category: unknown
 
     normalize_cameras: True
     persistent_workers: True
