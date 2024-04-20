@@ -85,7 +85,7 @@ class PoseDiffusionModel(nn.Module):
     def forward(
         self,
         image: torch.Tensor,
-        init_poses: torch.Tensor = None,
+        init_poses = None,
         gt_cameras: Optional[CamerasBase] = None,
         sequence_name: Optional[List[str]] = None,
         cond_fn=None,
@@ -112,7 +112,6 @@ class PoseDiffusionModel(nn.Module):
         Returns:
             PerspectiveCameras: PyTorch3D camera object.
         """
-
         shapelist = list(image.shape)
         batch_num = shapelist[0]
         frame_num = shapelist[1]
@@ -145,7 +144,15 @@ class PoseDiffusionModel(nn.Module):
             (pose_encoding, pose_encoding_diffusion_samples) = self.diffuser.sample(
                 shape=target_shape, init_poses=init_poses,  z=z, cond_fn=cond_fn, cond_start_step=cond_start_step
             )
+
+            # write the tensor to a csv file
+            # transform to 2d
+            pose_encoding_to_write = pose_encoding.squeeze(0)
+            pose_encoding_to_write = pose_encoding_to_write.cpu().detach().numpy()
+            np.savetxt("pose_encoding.csv", pose_encoding_to_write, delimiter=" ")
+
             # convert the encoded representation to PyTorch3D cameras
+            
             pred_cameras = pose_encoding_to_camera(pose_encoding, pose_encoding_type=self.pose_encoding_type)
 
             diffusion_results = {"pred_cameras": pred_cameras, "z": z}

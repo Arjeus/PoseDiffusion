@@ -15,7 +15,7 @@ test_initial:
     img_size: 224
     category: unknown
 
-    normalize_cameras: True
+    normalize_cameras: False
     persistent_workers: True
 
     preload_image: False

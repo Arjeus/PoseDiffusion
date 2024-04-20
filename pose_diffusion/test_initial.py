@@ -22,6 +22,7 @@ from omegaconf import DictConfig, OmegaConf
 from pytorch3d.ops import corresponding_cameras_alignment
 from pytorch3d.renderer.cameras import PerspectiveCameras
 from pytorch3d.vis.plotly_vis import plot_scene
+from pytorch3d.transforms.rotation_conversions import matrix_to_quaternion, quaternion_to_matrix
 
 from datasets.co3d_v2 import TRAINING_CATEGORIES, TEST_CATEGORIES, DEBUG_CATEGORIES, UNKNOWN_CATEGORIES
 from util.match_extraction import extract_match
@@ -163,7 +164,7 @@ def _test_one_category(model, category, cfg, num_frames, random_order, accelerat
             continue
         
         if random_order:
-            ids = len(metadata)
+            ids = np.arange(len(metadata))
         else:
             raise ValueError("Please specify your own sampling strategy")
             
@@ -212,12 +213,16 @@ def _test_one_category(model, category, cfg, num_frames, random_order, accelerat
         images = images.unsqueeze(0)
         batch_size = len(images)
         # process batch["T_init"] and batch["R_init"] to a initial_poses tensor, in the form of tx,tys,tz, qw qx qy qz
-        initial_poses = torch.cat([batch["T_init"], batch["R_init"]], dim=1).to(accelerator.device)
+        # change batch["R_init"] to quaternion
+        quats = matrix_to_quaternion(batch["R_init"])
+        initial_poses = torch.cat([batch["T_init"], quats], dim=1).to(accelerator.device)
+        # reshape to 1 x N x 7
+        initial_poses = initial_poses.unsqueeze(0)
+
         with torch.no_grad():
             predictions = model(images, initial_poses, cond_fn=cond_fn, cond_start_step=cfg.GGS.start_step, training=False, test_init = True)
 
         pred_cameras = predictions["pred_cameras"]
-        
         # compute metrics
         rel_rangle_deg, rel_tangle_deg = camera_to_rel_deg(pred_cameras, gt_cameras, accelerator.device, batch_size)
 

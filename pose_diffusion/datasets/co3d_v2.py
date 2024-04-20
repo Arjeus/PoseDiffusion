@@ -265,7 +265,6 @@ class Co3dDataset(Dataset):
         return self.get_data(index=index, ids=ids)        
 
     def get_data(self, index=None, sequence_name=None, ids=(0, 1), no_images=False, return_path = False, test_init = False):
-        pdb.set_trace()
         if sequence_name is None:
             sequence_name = self.sequence_list[index]
         metadata = self.rotations[sequence_name]
@@ -358,7 +357,6 @@ class Co3dDataset(Dataset):
 
         new_fls = torch.stack(new_fls)
         new_pps = torch.stack(new_pps)
-
         if self.normalize_cameras: 
             cameras = PerspectiveCameras( # TODO: what does this do?
                 focal_length=new_fls.numpy(),
@@ -404,7 +402,6 @@ class Co3dDataset(Dataset):
                         
             batch["fl"] = normalized_cameras.focal_length
             batch["pp"] = normalized_cameras.principal_point
-
             if torch.any(torch.isnan(batch["T"])):
                 print(ids)
                 print(category)
