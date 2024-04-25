@@ -11,8 +11,8 @@ train:
     category: seen
     restart_num: 50
     lr: 0.0001
-    resume_ckpt: "/home/arj/code/datasets/pcd_train/ckpt_000000"
-    # resume_ckpt: False
+    # resume_ckpt: "/home/arj/code/datasets/pcd_train/ckpt_000002"
+    resume_ckpt: False
     epochs: 25
     ckpt_interval: 1
     num_workers: 1
@@ -46,7 +46,7 @@ debug: True
 exp_dir: "/home/arj/code/datasets/pcd_train"
 
 MODEL:
-    _target_: models.PoseDiffusionModel
+    _target_: models.PoseDiffusionModelCompre
 
     pose_encoding_type: absT_quaR_logFL
 
