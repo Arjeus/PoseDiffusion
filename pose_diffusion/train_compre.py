@@ -28,9 +28,13 @@ from util.train_util import (
     set_seed_and_print,
     view_color_coded_images_for_visdom,
 )
+import sys
+sys.path.append('./util/')
+from merged_cloud import add_merged_clouds
+
 import pdb
 
-@hydra.main(config_path="../cfgs/", config_name="default_train")
+@hydra.main(config_path="../cfgs/", config_name="default_train_compre")
 def train_fn(cfg: DictConfig):
     OmegaConf.set_struct(cfg, False)
     accelerator = Accelerator(even_batches=False, device_placement=False)
@@ -164,7 +168,9 @@ def _train_or_eval_fn(
     for step, batch in enumerate(dataloader):
         # data preparation
         #print length of batch
+        # TODO: lots of insertion here
         pdb.set_trace()
+        images, translation, rotation = add_merged_clouds(batch)
         images = batch["image"].to(accelerator.device)   
         translation = batch["T"].to(accelerator.device)
         rotation = batch["R"].to(accelerator.device)
@@ -193,11 +199,13 @@ def _train_or_eval_fn(
 
         if training:
             predictions = model(images, gt_cameras=gt_cameras, training=True, batch_repeat=cfg.train.batch_repeat)
+            # TODO: remove last cloud
             predictions["loss"] = predictions["loss"].mean()
             loss = predictions["loss"]
         else:
             with torch.no_grad():
                 predictions = model(images, training=False)
+                # TODO: remove last cloud
 
         pred_cameras = predictions["pred_cameras"]
 

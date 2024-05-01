@@ -46,8 +46,8 @@ debug: True
 exp_dir: "/home/arj/code/datasets/pcd_train"
 
 MODEL:
-    _target_: models.PoseDiffusionModelCompre
-
+    # _target_: models.PoseDiffusionModelCompre
+    _target_: models.PoseDiffusionModel
     pose_encoding_type: absT_quaR_logFL
 
     IMAGE_FEATURE_EXTRACTOR: 

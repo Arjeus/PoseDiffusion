@@ -145,6 +145,7 @@ class Co3dDataset(Dataset):
                                 "principal_point": data["principal_point"],
                                 "R_init": data["R_init"],
                                 "T_init": data["T_init"],
+                                "cloud_path": data["cloud_path"],
                             }
                         )
 
@@ -157,6 +158,7 @@ class Co3dDataset(Dataset):
                                 "T": data["T"],
                                 "focal_length": data["focal_length"], # will eventually remove this too
                                 "principal_point": data["principal_point"],
+                                "cloud_path": data["cloud_path"],
                             }
                         )
                 if not bad_seq:
@@ -202,7 +204,6 @@ class Co3dDataset(Dataset):
             self.rand_erase = transforms.RandomErasing(
                 p=0.1, scale=(0.02, 0.33), ratio=(0.3, 3.3), value=0, inplace=False
             )
-        
         print(f"Low quality translation sequences, not used: {self.low_quality_translations}")
         print(f"Data size: {len(self)}")
 
@@ -264,11 +265,13 @@ class Co3dDataset(Dataset):
         ids = np.random.choice(len(metadata), n_per_seq, replace=False)
         return self.get_data(index=index, ids=ids)        
 
-    def get_data(self, index=None, sequence_name=None, ids=(0, 1), no_images=False, return_path = False, test_init = False):
+    def get_data(self, index=None, sequence_name=None, ids=(0, 1), no_images=False, return_path = False, test_init = False, compre_model = False):
         if sequence_name is None:
             sequence_name = self.sequence_list[index]
         metadata = self.rotations[sequence_name]
         category = self.category_map[sequence_name]
+        print("category", category)
+        print("sequence", sequence_name)
         annos = [metadata[i] for i in ids]
         if self.sort_by_filename:
             annos = sorted(annos, key=lambda x: x["filepath"])
@@ -282,12 +285,13 @@ class Co3dDataset(Dataset):
         principal_points = []
         image_paths = []
         init_values = []
-        
+        pointclouds_list = []
         for anno in annos:
             filepath = anno["filepath"]
             image_path = osp.join(self.CO3D_DIR, filepath)
+            cloudfilepath = anno["cloud_path"]
+            pointcloud_path = osp.join(self.CO3D_DIR, cloudfilepath)
             image = np.load(image_path)
-
             # if self.mask_images:
             #     white_image = Image.new("RGB", image.size, (255, 255, 255))
             #     mask_name = osp.basename(filepath.replace(".jpg", ".png"))
@@ -299,7 +303,9 @@ class Co3dDataset(Dataset):
             #         mask = mask.resize(image.size)
             #     mask = Image.fromarray(np.array(mask) > 125)
             #     image = Image.composite(image, white_image, mask)
+            
             images.append(torch.from_numpy(image))
+            pointclouds_list.append(pointcloud_path)
             rotations.append(torch.tensor(anno["R"]))
             translations.append(torch.tensor(anno["T"]))
             # append to translations_init and rotations_init if anno["T_init"] and anno["R_init"] exist
@@ -354,7 +360,6 @@ class Co3dDataset(Dataset):
         # images = images_transformed
 
         batch = {"seq_id": sequence_name, "category": category, "n": len(metadata), "ind": torch.tensor(ids)}
-
         new_fls = torch.stack(new_fls)
         new_pps = torch.stack(new_pps)
         if self.normalize_cameras: 
@@ -427,7 +432,7 @@ class Co3dDataset(Dataset):
         #         images = self.rand_erase(images)
 
         batch["image"] = images
-
+        batch["cloud_path"] = pointclouds_list
         if return_path:
             return batch, image_paths
         return batch
@@ -456,20 +461,25 @@ def square_bbox(bbox, padding=0.0, astype=None):
 TRAINING_CATEGORIES = ["site1_handheld_3",
     "site3_handheld_2",
     "Bldg1_Stage1",
-    "bldg1_stage2",
-    "bldg1_stage3",
-    "bldg2_stage1",
-    "bldg2_stage2",
-    "bldg2_stage3",
-    "Bldg1_Scene1",
-    "Bldg2_Stage5",
-    "Bldg2_Stage4",
-    "Bldg3_Stage1",
-    "Bldg3_Stage2",
+    # "bldg1_stage2",
+    # "bldg1_stage3",
+    # "bldg2_stage1",
+    # "bldg2_stage2",
+    # "bldg2_stage3",
+    # "Bldg1_Scene1",
+    # "Bldg2_Stage5",
+    # "Bldg2_Stage4",
+    # "Bldg3_Stage1",
+    # "Bldg3_Stage2",
+    # "Bldg3_Stage3",
+    # "Bldg3_Stage4",
+    # "Bldg3_Stage5",
 ]
 
-TEST_CATEGORIES = ["site1_handheld_3","site3_handheld_2","Bldg1_Stage1","bldg1_stage2","bldg1_stage3","bldg2_stage1","bldg2_stage2","bldg2_stage3","Bldg1_Scene65","Bldg2_Stage5","Bldg2_Stage4","Bldg3_Stage1","Bldg3_Stage2"]
+# TEST_CATEGORIES = ["site1_handheld_3","site3_handheld_2","Bldg1_Stage1","bldg1_stage2","bldg1_stage3","bldg2_stage1","bldg2_stage2","bldg2_stage3","Bldg1_Scene65","Bldg2_Stage5","Bldg2_Stage4","Bldg3_Stage1","Bldg3_Stage2","Bldg3_Stage3","Bldg3_Stage4","Bldg3_Stage5"]
+TEST_CATEGORIES = ["site1_handheld_3","site3_handheld_2","Bldg1_Stage1",]
 
-DEBUG_CATEGORIES = ["site1_handheld_3","site3_handheld_2","Bldg1_Stage1","bldg1_stage2","bldg1_stage3","bldg2_stage1","bldg2_stage2","bldg2_stage3","Bldg1_Scene1","Bldg2_Stage5","Bldg2_Stage4","Bldg3_Stage1","Bldg3_Stage2"]
+# DEBUG_CATEGORIES = ["site1_handheld_3","site3_handheld_2","Bldg1_Stage1","bldg1_stage2","bldg1_stage3","bldg2_stage1","bldg2_stage2","bldg2_stage3","Bldg1_Scene1","Bldg2_Stage5","Bldg2_Stage4","Bldg3_Stage1","Bldg3_Stage2","Bldg3_Stage3","Bldg3_Stage4","Bldg3_Stage5"]
+DEBUG_CATEGORIES = ["site1_handheld_3","site3_handheld_2","Bldg1_Stage1",]
 
 UNKNOWN_CATEGORIES = ["site1_handheld_3_end"]
