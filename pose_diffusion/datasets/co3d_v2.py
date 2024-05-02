@@ -270,8 +270,6 @@ class Co3dDataset(Dataset):
             sequence_name = self.sequence_list[index]
         metadata = self.rotations[sequence_name]
         category = self.category_map[sequence_name]
-        print("category", category)
-        print("sequence", sequence_name)
         annos = [metadata[i] for i in ids]
         if self.sort_by_filename:
             annos = sorted(annos, key=lambda x: x["filepath"])

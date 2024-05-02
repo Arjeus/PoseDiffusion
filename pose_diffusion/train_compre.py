@@ -169,14 +169,12 @@ def _train_or_eval_fn(
         # data preparation
         #print length of batch
         # TODO: lots of insertion here
-        pdb.set_trace()
-        images, translation, rotation = add_merged_clouds(batch)
+        batch = add_merged_clouds(batch)
         images = batch["image"].to(accelerator.device)   
         translation = batch["T"].to(accelerator.device)
         rotation = batch["R"].to(accelerator.device)
         fl = batch["fl"].to(accelerator.device)
         pp = batch["pp"].to(accelerator.device)
-
         if training and cfg.train.batch_repeat > 0:
             # repeat samples by several times
             # to accelerate training

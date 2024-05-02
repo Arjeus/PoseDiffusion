@@ -3,6 +3,7 @@ import open3d as o3d
 import json
 import numpy as np
 import os
+import torch
 
 def transform_to_pointnet(cloud):
     # parameters
@@ -78,7 +79,11 @@ def add_merged_clouds(batch):
     # execute each row as it is a batch.
     # transpose the batch["cloud_path"]
     rowlength = len(batch["cloud_path"][0])
+    cloud_list = []
+    translation_list = []
+    rotation_list = []
     new_cloud_path = []
+    fl_list = []
     for _ in range(rowlength):
         new_cloud_path.append([])
 
@@ -86,8 +91,6 @@ def add_merged_clouds(batch):
         for j in range(rowlength):
             new_cloud_path[j].append(batch["cloud_path"][i][j])
 
-
-    merged_cloud_net_list = []
     for i in range(len(new_cloud_path)): # len(batch is different)
         merged_cloud = o3d.geometry.PointCloud()
         for idx,path in enumerate(new_cloud_path[i]):
@@ -99,10 +102,23 @@ def add_merged_clouds(batch):
 
         # downsample pointcloud to 0.05
         merged_cloud = merged_cloud.voxel_down_sample(voxel_size=0.05)
+        # normalize pointcloud
+        # merged_cloud.estimate_normals(o3d.geometry.KDTreeSearchParamRadius(0.3)) # incidentally, normal estimation distorts pointnet's learning!
+
         merged_cloud_net = transform_to_pointnet(merged_cloud)
-    
-    #concatenate merged_cloud_net to batch["image"]
-    merged_cloud_net = merged_cloud_net.unsqueeze(1)
-    batch["image"] = torch.cat((batch["image"], merged_cloud_net), 1)
-    
- 
+        merged_cloud_net = torch.from_numpy(merged_cloud_net).unsqueeze(0)
+        cloud_list.append((torch.cat((batch["image"][i], merged_cloud_net))).unsqueeze(0))
+        # concatenate batch["T"]
+        translation_list.append(torch.cat((batch["T"][i], torch.zeros(1,3))).unsqueeze(0))
+        # concatenate batch["R"]
+        rotation_list.append(torch.cat((batch["R"][i], torch.eye(3).unsqueeze(0))).unsqueeze(0))
+        fl_list.append(torch.cat((batch["fl"][i], torch.tensor([3.,3.]).unsqueeze(0))).unsqueeze(0))
+
+        del merged_cloud
+
+    batch["image"] = torch.vstack(cloud_list)
+    batch["T"] = torch.vstack(translation_list)
+    batch["R"] = torch.vstack(rotation_list)
+    batch["fl"] = torch.vstack(fl_list)
+
+    return batch

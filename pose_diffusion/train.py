@@ -164,7 +164,6 @@ def _train_or_eval_fn(
     for step, batch in enumerate(dataloader):
         # data preparation
         #print length of batch
-        pdb.set_trace()
         images = batch["image"].to(accelerator.device)   
         translation = batch["T"].to(accelerator.device)
         rotation = batch["R"].to(accelerator.device)
