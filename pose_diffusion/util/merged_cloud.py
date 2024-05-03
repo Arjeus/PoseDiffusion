@@ -4,8 +4,9 @@ import json
 import numpy as np
 import os
 import torch
+import transform_to_pointnet
 
-def transform_to_pointnet(cloud):
+def transform_to_pointnet_py(cloud):
     # parameters
     block_size = 1.0
     stride = 0.5
@@ -44,7 +45,6 @@ def transform_to_pointnet(cloud):
             point_idxs = np.concatenate((point_idxs, point_idxs_repeat))
             np.random.shuffle(point_idxs)
             data_batch = points[point_idxs, :]
-            print("points shape", points.shape)
             normlized_xyz = np.zeros((point_size, 3))
             normlized_xyz[:, 0] = data_batch[:, 0] / coord_max[0]
             normlized_xyz[:, 1] = data_batch[:, 1] / coord_max[1]
@@ -105,8 +105,8 @@ def add_merged_clouds(batch):
         merged_cloud = merged_cloud.voxel_down_sample(voxel_size=0.05)
         # normalize pointcloud
         # merged_cloud.estimate_normals(o3d.geometry.KDTreeSearchParamRadius(0.3)) # incidentally, normal estimation distorts pointnet's learning!
-
-        merged_cloud_net = transform_to_pointnet(merged_cloud)
+        merged_cloud_net = transform_to_pointnet.cloud_to_pointnet(np.asarray(merged_cloud.points))
+        merged_cloud_net = merged_cloud_net.reshape((9,4096))
         merged_cloud_net = torch.from_numpy(merged_cloud_net).unsqueeze(0)
         cloud_list.append((torch.cat((batch["image"][i], merged_cloud_net))).unsqueeze(0))
         # concatenate batch["T"]

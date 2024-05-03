@@ -118,8 +118,13 @@ py::array_t<float> transform_to_pointnet(py::array_t<float> input_array) {
             data_batch.col(5).array() /= 255.0f;
             data_batch.conservativeResize(point_size, data_batch.cols() + 3);
             data_batch.rightCols(3) = normlized_xyz;
-            data_room.emplace_back(data_batch);
-            index_room.emplace_back(point_idxs);
+            if (data_room.empty()) {
+                data_room.push_back(data_batch.cast<float>()); // Ensure data_batch is also of type float
+            } else {
+                Eigen::Matrix<float, -1, -1> temp(data_room.back().rows() + data_batch.rows(), data_room.back().cols());
+                temp << data_room.back(), data_batch;
+                data_room.back() = temp;
+            }
         }
     }
 
