@@ -44,6 +44,7 @@ def transform_to_pointnet(cloud):
             point_idxs = np.concatenate((point_idxs, point_idxs_repeat))
             np.random.shuffle(point_idxs)
             data_batch = points[point_idxs, :]
+            print("points shape", points.shape)
             normlized_xyz = np.zeros((point_size, 3))
             normlized_xyz[:, 0] = data_batch[:, 0] / coord_max[0]
             normlized_xyz[:, 1] = data_batch[:, 1] / coord_max[1]

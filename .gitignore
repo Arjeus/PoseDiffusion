@@ -22,3 +22,4 @@ pose_diffusion/*.npy
 pose_diffusion/nohup.out
 pose_diffusion/util/eigen-3.4.0
 pose_diffusion/util/eigen-3.4.0.zip
+pose_diffusion/util/transform_to_pointnet.cpython-39-x86_64-linux-gnu.so
