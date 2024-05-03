@@ -73,7 +73,7 @@ def transform_to_pointnet(cloud):
     # remove first dimension of batch_data
     batch_data = batch_data[0]
     batch_data = batch_data.transpose()
-    
+    print("batch_data shape", batch_data.shape)
     return batch_data
 
 def add_merged_clouds(batch):

@@ -123,36 +123,33 @@ py::array_t<float> transform_to_pointnet(py::array_t<float> input_array) {
         }
     }
 
-
-    // Simulating `data_room` and `index_room` as flattened arrays
-    double data_flat[] = { /* flattened data */ };
-    int index_flat[] = { /* flattened index data */ };
     
-    // Get number of blocks
-    int num_blocks = data_room.rows();
+    // Get number of blocks from vector size
+    int data_dim = 9; // Assuming each matrix in data_room_vector has 9 features per point
 
-    // Define batch matrices
-    Eigen::MatrixXf batch_data(1, block_points * num_features);
-    Eigen::VectorXf batch_point_index(1, block_points);
-    Eigen::VectorXf batch_smpw(1, block_points);
+    // Create batch_data large enough to hold data from all matrices in the vector if needed
+    Eigen::MatrixXf batch_data(data_room.size(), block_points * data_dim);
+    Eigen::VectorXf batch_point_index(block_points);
 
-    // Indices for slicing
-    int start_idx = 0;
-    int end_idx = std::min(1, num_blocks);
+    // Iterate over each matrix in the vector
+    for (int idx = 0; idx < data_room.size(); ++idx) {
+        const Eigen::MatrixXf& data_room_matrix = data_room[idx];
 
-    // Fill batch data
-    batch_data.block(0, 0, end_idx - start_idx, block_points * num_features) = data_room.block(start_idx, 0, end_idx - start_idx, block_points * num_features);
+        // Verify the matrix has enough rows to extract a block of size 'block_points'
+        if (data_room_matrix.rows() >= block_points) {
+            // Extract the block from current matrix
+            Eigen::MatrixXf data_block = data_room_matrix.block(0, 0, block_points, data_dim); // Adjust indices as needed
+            batch_data.block(idx, 0, 1, block_points * data_dim) = Eigen::RowVectorXf::Map(data_block.data(), block_points * data_dim);
+        }
+        
+    }
 
-    // Transpose and remove first dimension (flattening)
-    MatrixXd transposed_data = batch_data.colwise().transpose();
+    // Transposing the data for any further operations if necessary
+    Eigen::MatrixXf transposed_batch_data = batch_data.transpose();
 
-    //convert result to numpy array
-    py::array_t<float> result_array({result.rows(), result.cols()});
-    py::buffer_info buf_info_result = result_array.request();
-    float *ptr_result = static_cast<float *>(buf_info_result.ptr);
-    Eigen::Map<Eigen::MatrixXf>(ptr_result, result.rows(), result.cols()) = result;
+    // Return as numpy array
+    return py::array_t<float>(transposed_batch_data.size(), transposed_batch_data.data());
 
-    return result_array;
 }
 
 
