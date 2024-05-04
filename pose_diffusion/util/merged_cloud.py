@@ -98,7 +98,7 @@ def process_blocks(points, coord_min, coord_max, grid_x, grid_y, block_size, str
                 continue
             num_batch = int(np.ceil(point_idxs.size / block_points))
             point_size = int(num_batch * block_points)
-            replace = False if (point_size - point_idxs.size <= point_idxs.size) else True
+            replace = point_size - point_idxs.size > point_idxs.size
             point_idxs_repeat = np.random.choice(point_idxs, point_size - point_idxs.size, replace=replace)
             point_idxs = np.concatenate((point_idxs, point_idxs_repeat))
             np.random.shuffle(point_idxs)
@@ -131,11 +131,17 @@ def transform_to_pointnet_numba(cloud):
     index_room = np.array(index_room)
     data_room = data_room.reshape((-1, block_points, data_room.shape[1]))
     index_room = index_room.reshape((-1, block_points))
-
+    # num_blocks = data_room.shape[0]
+    # batch_data = data_room[:1, ...]  # Simplifying the example to take the first batch
+    # batch_data = batch_data.transpose()
     num_blocks = data_room.shape[0]
-    batch_data = data_room[:1, ...]  # Simplifying the example to take the first batch
-    batch_data = batch_data.transpose((1, 0, 2)).squeeze(axis=1)
-
+    batch_data = np.zeros((1, block_points, 9))
+    start_idx = 0*1
+    end_idx = min((0 + 1) * 1, num_blocks)
+    real_batch_size = end_idx - start_idx 
+    batch_data[0:real_batch_size, ...] = data_room[start_idx:end_idx, ...]
+    batch_data = batch_data[0]
+    batch_data = batch_data.transpose()  
     return batch_data
 
 def add_merged_clouds(batch):
@@ -173,7 +179,6 @@ def add_merged_clouds(batch):
         merged_cloud_net = transform_to_pointnet_numba(np.asarray(merged_cloud.points))
         end_time = time.time()
         print("Time taken for cloud_to_pointnet: ", end_time - start_time)
-        merged_cloud_net = merged_cloud_net.reshape((9,4096))
         merged_cloud_net = torch.from_numpy(merged_cloud_net).unsqueeze(0)
         cloud_list.append((torch.cat((batch["image"][i], merged_cloud_net))).unsqueeze(0))
         # concatenate batch["T"]
