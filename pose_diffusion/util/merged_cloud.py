@@ -5,6 +5,8 @@ import numpy as np
 import os
 import torch
 import transform_to_pointnet
+import time
+from numba import jit, njit, prange
 
 def transform_to_pointnet_py(cloud):
     # parameters
@@ -14,7 +16,7 @@ def transform_to_pointnet_py(cloud):
     padding = 0.001
 
     # transform to numpy
-    data = np.asarray(cloud.points)
+    data = cloud
     scenepointsx = data[:, :3]
     scenepointsx = np.concatenate((scenepointsx, np.ones((scenepointsx.shape[0], 3))), axis=1)
     coord_min, coord_max = np.amin(scenepointsx, axis=0)[:], np.amax(scenepointsx, axis=0)[:]
@@ -73,7 +75,67 @@ def transform_to_pointnet_py(cloud):
     # remove first dimension of batch_data
     batch_data = batch_data[0]
     batch_data = batch_data.transpose()
-    print("batch_data shape", batch_data.shape)
+    return batch_data
+
+@njit
+def process_blocks(points, coord_min, coord_max, grid_x, grid_y, block_size, stride, block_points, padding):
+    data_room = []
+    index_room = []
+    for index_y in prange(grid_y):
+        for index_x in prange(grid_x):
+            s_x = coord_min[0] + index_x * stride
+            e_x = min(s_x + block_size, coord_max[0])
+            s_x = e_x - block_size
+            s_y = coord_min[1] + index_y * stride
+            e_y = min(s_y + block_size, coord_max[1])
+            s_y = e_y - block_size        
+            point_idxs = np.where(
+                (points[:, 0] >= s_x - padding) & 
+                (points[:, 0] <= e_x + padding) & 
+                (points[:, 1] >= s_y - padding) & 
+                (points[:, 1] <= e_y + padding))[0]
+            if point_idxs.size == 0:
+                continue
+            num_batch = int(np.ceil(point_idxs.size / block_points))
+            point_size = int(num_batch * block_points)
+            replace = False if (point_size - point_idxs.size <= point_idxs.size) else True
+            point_idxs_repeat = np.random.choice(point_idxs, point_size - point_idxs.size, replace=replace)
+            point_idxs = np.concatenate((point_idxs, point_idxs_repeat))
+            np.random.shuffle(point_idxs)
+            data_batch = points[point_idxs, :]
+            normalized_xyz = data_batch[:, :3] / coord_max[:3]
+            data_batch[:, :3] -= np.array([s_x + block_size / 2.0, s_y + block_size / 2.0, 0])
+            data_batch[:, 3:6] /= 255.0
+            data_batch = np.concatenate((data_batch, normalized_xyz), axis=1)
+            data_room.append(data_batch)
+            index_room.extend(point_idxs)
+
+    return data_room, index_room
+
+@jit(forceobj=True)
+def transform_to_pointnet_numba(cloud):
+    # parameters
+    block_size = 1.0
+    stride = 0.5
+    block_points = 4096
+    padding = 0.001
+
+    data = cloud
+    scenepointsx = np.concatenate((data[:, :3], np.ones((data.shape[0], 3))), axis=1)
+    coord_min, coord_max = np.amin(scenepointsx, axis=0)[:3], np.amax(scenepointsx, axis=0)[:3]
+    grid_x = int(np.ceil((coord_max[0] - coord_min[0] - block_size) / stride) + 1)
+    grid_y = int(np.ceil((coord_max[1] - coord_min[1] - block_size) / stride) + 1)
+
+    data_room, index_room = process_blocks(scenepointsx, coord_min, coord_max, grid_x, grid_y, block_size, stride, block_points, padding)
+    data_room = np.vstack(data_room)
+    index_room = np.array(index_room)
+    data_room = data_room.reshape((-1, block_points, data_room.shape[1]))
+    index_room = index_room.reshape((-1, block_points))
+
+    num_blocks = data_room.shape[0]
+    batch_data = data_room[:1, ...]  # Simplifying the example to take the first batch
+    batch_data = batch_data.transpose((1, 0, 2)).squeeze(axis=1)
+
     return batch_data
 
 def add_merged_clouds(batch):
@@ -105,7 +167,12 @@ def add_merged_clouds(batch):
         merged_cloud = merged_cloud.voxel_down_sample(voxel_size=0.05)
         # normalize pointcloud
         # merged_cloud.estimate_normals(o3d.geometry.KDTreeSearchParamRadius(0.3)) # incidentally, normal estimation distorts pointnet's learning!
-        merged_cloud_net = transform_to_pointnet.cloud_to_pointnet(np.asarray(merged_cloud.points))
+        # measure time
+        start_time = time.time()
+        # merged_cloud_net = transform_to_pointnet.cloud_to_pointnet(np.asarray(merged_cloud.points))
+        merged_cloud_net = transform_to_pointnet_numba(np.asarray(merged_cloud.points))
+        end_time = time.time()
+        print("Time taken for cloud_to_pointnet: ", end_time - start_time)
         merged_cloud_net = merged_cloud_net.reshape((9,4096))
         merged_cloud_net = torch.from_numpy(merged_cloud_net).unsqueeze(0)
         cloud_list.append((torch.cat((batch["image"][i], merged_cloud_net))).unsqueeze(0))
