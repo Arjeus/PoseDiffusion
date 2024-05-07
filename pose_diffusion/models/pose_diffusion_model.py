@@ -71,13 +71,28 @@ class PoseDiffusionModel(nn.Module):
         self.apply(self._init_weights)
 
     def _init_weights(self, m):
+        # set to identity! let's see!
+        # if the layer is 2 dimensional
         if isinstance(m, nn.Linear):
-            nn.init.trunc_normal_(m.weight, std=0.02)
+            nn.init.eye_(m.weight)
             if isinstance(m, nn.Linear) and m.bias is not None:
                 nn.init.constant_(m.bias, 0)
         elif isinstance(m, nn.LayerNorm):
             nn.init.constant_(m.bias, 0)
             nn.init.constant_(m.weight, 1.0)
+        # for convolutional layer, apply dirac delta function and tensors with 3 to 5 dimensions only
+        elif isinstance(m, nn.Conv2d):
+            nn.init.dirac_(m.weight)
+        elif isinstance(m, nn.Conv1d):
+            nn.init.dirac_(m.weight)
+            
+        # if isinstance(m, nn.Linear):
+        #     nn.init.trunc_normal_(m.weight, std=0.02)
+        #     if isinstance(m, nn.Linear) and m.bias is not None:
+        #         nn.init.constant_(m.bias, 0)
+        # elif isinstance(m, nn.LayerNorm):
+        #     nn.init.constant_(m.bias, 0)
+        #     nn.init.constant_(m.weight, 1.0)
 
     def diffuser_wrapper(self,pose_encoding, z):
         return self.diffuser(pose_encoding, z=z)

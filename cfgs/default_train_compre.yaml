@@ -11,9 +11,9 @@ train:
     category: seen
     restart_num: 50
     lr: 0.0001
-    resume_ckpt: "/home/arj/code/datasets/pcd_train/ckpt_000002"
-    # resume_ckpt: True
-    epochs: 25
+    resume_ckpt: "/home/arj/code/datasets/pcd_train/ckpt_000008"
+    # resume_ckpt: False
+    epochs: 20
     ckpt_interval: 1
     num_workers: 1
 
@@ -21,8 +21,11 @@ train:
 
     print_interval: 10
 
-    len_train: 2100
-    len_eval: 700
+    # len_train: 2100
+    # len_eval: 700
+
+    len_train: 300
+    len_eval: 100
 
     max_images: 14 # must be twice that of images_per_seq
     normalize_cameras: True

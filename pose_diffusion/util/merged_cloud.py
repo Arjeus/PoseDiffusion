@@ -14,6 +14,7 @@ def transform_to_pointnet_py(cloud):
     stride = 0.5
     block_points = 4096
     padding = 0.001
+    constant_for_normalization = 20
 
     # transform to numpy
     data = cloud
@@ -21,11 +22,11 @@ def transform_to_pointnet_py(cloud):
     scenepointsx = np.concatenate((scenepointsx, np.ones((scenepointsx.shape[0], 3))), axis=1)
     coord_min, coord_max = np.amin(scenepointsx, axis=0)[:], np.amax(scenepointsx, axis=0)[:]
     labelweights = np.ones(13)
-    point_set_ini = scenepointsx
+    point_set_ini = scenepointsx[:, :3] 
     points = point_set_ini
     coord_min, coord_max = np.amin(points, axis=0)[:3], np.amax(points, axis=0)[:3] # id here?
     grid_x = int(np.ceil(float(coord_max[0] - coord_min[0] - block_size) / stride) + 1)
-    grid_y = int(np.ceil(float(coord_max[1] - coord_min[1] - block_size) / stride) + 1)   
+    grid_y = int(np.ceil(float(coord_max[1] - coord_min[1] - block_size) / stride) + 1)  
     data_room, label_room, sample_weight, index_room = np.array([]), np.array([]), np.array([]),  np.array([])
     for index_y in range(0, grid_y):
         for index_x in range(0, grid_x):
@@ -48,12 +49,11 @@ def transform_to_pointnet_py(cloud):
             np.random.shuffle(point_idxs)
             data_batch = points[point_idxs, :]
             normlized_xyz = np.zeros((point_size, 3))
-            normlized_xyz[:, 0] = data_batch[:, 0] / coord_max[0]
-            normlized_xyz[:, 1] = data_batch[:, 1] / coord_max[1]
-            normlized_xyz[:, 2] = data_batch[:, 2] / coord_max[2]
+            normlized_xyz[:, 0] = data_batch[:, 0] / constant_for_normalization
+            normlized_xyz[:, 1] = data_batch[:, 1] / constant_for_normalization
+            normlized_xyz[:, 2] = data_batch[:, 2] / constant_for_normalization
             data_batch[:, 0] = data_batch[:, 0] - (s_x + block_size / 2.0)
             data_batch[:, 1] = data_batch[:, 1] - (s_y + block_size / 2.0)
-            data_batch[:, 3:6] /= 255.0
             data_batch = np.concatenate((data_batch, normlized_xyz), axis=1)
             data_room = np.vstack([data_room, data_batch]) if data_room.size else data_batch
             index_room = np.hstack([index_room, point_idxs]) if index_room.size else point_idxs
@@ -64,7 +64,7 @@ def transform_to_pointnet_py(cloud):
     index_room = index_room.reshape((-1, block_points))
 
     num_blocks = data_room.shape[0]
-    batch_data = np.zeros((1, block_points, 9))
+    batch_data = np.zeros((1, block_points, 6))  # 6 = 3 original XYZ + 3 normalized XYZ
     batch_point_index = np.zeros((1, block_points))
     batch_smpw = np.zeros((1, block_points))
     start_idx = 0*1
@@ -174,11 +174,11 @@ def add_merged_clouds(batch):
         # normalize pointcloud
         # merged_cloud.estimate_normals(o3d.geometry.KDTreeSearchParamRadius(0.3)) # incidentally, normal estimation distorts pointnet's learning!
         # measure time
-        start_time = time.time()
+        # start_time = time.time()
         # merged_cloud_net = transform_to_pointnet.cloud_to_pointnet(np.asarray(merged_cloud.points))
         merged_cloud_net = transform_to_pointnet_numba(np.asarray(merged_cloud.points))
-        end_time = time.time()
-        print("Time taken for cloud_to_pointnet: ", end_time - start_time)
+        # end_time = time.time()
+        # print("Time taken for cloud_to_pointnet: ", end_time - start_time)
         merged_cloud_net = torch.from_numpy(merged_cloud_net).unsqueeze(0)
         cloud_list.append((torch.cat((batch["image"][i], merged_cloud_net))).unsqueeze(0))
         # concatenate batch["T"]

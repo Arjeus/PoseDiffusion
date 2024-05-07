@@ -459,14 +459,14 @@ def square_bbox(bbox, padding=0.0, astype=None):
 TRAINING_CATEGORIES = ["site1_handheld_3",
     "site3_handheld_2",
     "Bldg1_Stage1",
-    # "bldg1_stage2",
-    # "bldg1_stage3",
-    # "bldg2_stage1",
-    # "bldg2_stage2",
-    # "bldg2_stage3",
+    "bldg1_stage2",
+    "bldg1_stage3",
+    "bldg2_stage1",
+    "bldg2_stage2",
+    "bldg2_stage3",
     # "Bldg1_Scene1",
-    # "Bldg2_Stage5",
-    # "Bldg2_Stage4",
+    "Bldg2_Stage5",
+    "Bldg2_Stage4",
     # "Bldg3_Stage1",
     # "Bldg3_Stage2",
     # "Bldg3_Stage3",
@@ -475,9 +475,9 @@ TRAINING_CATEGORIES = ["site1_handheld_3",
 ]
 
 # TEST_CATEGORIES = ["site1_handheld_3","site3_handheld_2","Bldg1_Stage1","bldg1_stage2","bldg1_stage3","bldg2_stage1","bldg2_stage2","bldg2_stage3","Bldg1_Scene65","Bldg2_Stage5","Bldg2_Stage4","Bldg3_Stage1","Bldg3_Stage2","Bldg3_Stage3","Bldg3_Stage4","Bldg3_Stage5"]
-TEST_CATEGORIES = ["site1_handheld_3","site3_handheld_2","Bldg1_Stage1",]
+TEST_CATEGORIES = ["site1_handheld_3","site3_handheld_2","Bldg1_Stage1","bldg1_stage2","bldg1_stage3","bldg2_stage1","bldg2_stage2","bldg2_stage3","Bldg2_Stage5","Bldg2_Stage4",]
 
 # DEBUG_CATEGORIES = ["site1_handheld_3","site3_handheld_2","Bldg1_Stage1","bldg1_stage2","bldg1_stage3","bldg2_stage1","bldg2_stage2","bldg2_stage3","Bldg1_Scene1","Bldg2_Stage5","Bldg2_Stage4","Bldg3_Stage1","Bldg3_Stage2","Bldg3_Stage3","Bldg3_Stage4","Bldg3_Stage5"]
-DEBUG_CATEGORIES = ["site1_handheld_3","site3_handheld_2","Bldg1_Stage1",]
+DEBUG_CATEGORIES = ["site1_handheld_3","site3_handheld_2","Bldg1_Stage1","bldg1_stage2","bldg1_stage3","bldg2_stage1","bldg2_stage2","bldg2_stage3","Bldg2_Stage5","Bldg2_Stage4",]
 
 UNKNOWN_CATEGORIES = ["site1_handheld_3_end"]
