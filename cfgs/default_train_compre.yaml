@@ -11,7 +11,7 @@ train:
     category: seen
     restart_num: 50
     lr: 0.0001
-    resume_ckpt: "/home/arj/code/datasets/pcd_train/ckpt_000008"
+    resume_ckpt: "/home/arj/code/datasets/pcd_train/ckpt_000014"
     # resume_ckpt: False
     epochs: 20
     ckpt_interval: 1

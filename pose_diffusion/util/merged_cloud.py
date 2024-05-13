@@ -115,8 +115,8 @@ def process_blocks(points, coord_min, coord_max, grid_x, grid_y, block_size, str
 @jit(forceobj=True)
 def transform_to_pointnet_numba(cloud):
     # parameters
-    block_size = 1.0
-    stride = 0.5
+    block_size = 10
+    stride = 10
     block_points = 4096
     padding = 0.001
 
