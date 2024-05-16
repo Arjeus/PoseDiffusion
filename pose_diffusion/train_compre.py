@@ -37,7 +37,7 @@ import pdb
 @hydra.main(config_path="../cfgs/", config_name="default_train_compre")
 def train_fn(cfg: DictConfig):
     OmegaConf.set_struct(cfg, False)
-    accelerator = Accelerator(even_batches=False, device_placement=False)
+    accelerator = Accelerator(even_batches=False, device_placement=False, mixed_precision='fp16')
 
     # Print configuration and accelerator state
     accelerator.print("Model Config:", OmegaConf.to_yaml(cfg), accelerator.state)
@@ -175,88 +175,90 @@ def _train_or_eval_fn(
         rotation = batch["R"].to(accelerator.device)
         fl = batch["fl"].to(accelerator.device)
         pp = batch["pp"].to(accelerator.device)
-        if training and cfg.train.batch_repeat > 0:
-            # repeat samples by several times
-            # to accelerate training
-            br = cfg.train.batch_repeat
-            gt_cameras = PerspectiveCameras(
-                focal_length=fl.reshape(-1, 2).repeat(br, 1),
-                R=rotation.reshape(-1, 3, 3).repeat(br, 1, 1),
-                T=translation.reshape(-1, 3).repeat(br, 1),
-                device=accelerator.device,
-            )
-            batch_size = len(images) * br
-        else:
-            gt_cameras = PerspectiveCameras(
-                focal_length=fl.reshape(-1, 2),
-                R=rotation.reshape(-1, 3, 3),
-                T=translation.reshape(-1, 3),
-                device=accelerator.device,
-            )
-            batch_size = len(images)
+        with accelerator.autocast(): 
+            if training and cfg.train.batch_repeat > 0:
+                # repeat samples by several times
+                # to accelerate training
+                br = cfg.train.batch_repeat
+                gt_cameras = PerspectiveCameras(
+                    focal_length=fl.reshape(-1, 2).repeat(br, 1),
+                    R=rotation.reshape(-1, 3, 3).repeat(br, 1, 1),
+                    T=translation.reshape(-1, 3).repeat(br, 1),
+                    device=accelerator.device,
+                )
+                batch_size = len(images) * br
+            else:
+                gt_cameras = PerspectiveCameras(
+                    focal_length=fl.reshape(-1, 2),
+                    R=rotation.reshape(-1, 3, 3),
+                    T=translation.reshape(-1, 3),
+                    device=accelerator.device,
+                )
+                batch_size = len(images)
 
-        if training:
-            predictions = model(images, gt_cameras=gt_cameras, training=True, batch_repeat=cfg.train.batch_repeat)
-            # TODO: remove last cloud
-            predictions["loss"] = predictions["loss"].mean()
-            loss = predictions["loss"]
-        else:
-            with torch.no_grad():
-                predictions = model(images, training=False)
+        with accelerator.autocast(): 
+            if training:
+                predictions = model(images, gt_cameras=gt_cameras, training=True, batch_repeat=cfg.train.batch_repeat)
                 # TODO: remove last cloud
+                predictions["loss"] = predictions["loss"].mean()
+                loss = predictions["loss"]
+            else:
+                with torch.no_grad():
+                    predictions = model(images, training=False)
+                    # TODO: remove last cloud
 
-        pred_cameras = predictions["pred_cameras"]
+            pred_cameras = predictions["pred_cameras"]
 
-        # compute metrics
-        rel_rangle_deg, rel_tangle_deg = camera_to_rel_deg(pred_cameras, gt_cameras, accelerator.device, batch_size)
+            # compute metrics
+            rel_rangle_deg, rel_tangle_deg = camera_to_rel_deg(pred_cameras, gt_cameras, accelerator.device, batch_size)
 
-        # metrics to report
-        Racc_5 = (rel_rangle_deg < 5).float().mean()
-        Racc_15 = (rel_rangle_deg < 15).float().mean()
-        Racc_30 = (rel_rangle_deg < 30).float().mean()
+            # metrics to report
+            Racc_5 = (rel_rangle_deg < 5).float().mean()
+            Racc_15 = (rel_rangle_deg < 15).float().mean()
+            Racc_30 = (rel_rangle_deg < 30).float().mean()
 
-        Tacc_5 = (rel_tangle_deg < 5).float().mean()
-        Tacc_15 = (rel_tangle_deg < 15).float().mean()
-        Tacc_30 = (rel_tangle_deg < 30).float().mean()
+            Tacc_5 = (rel_tangle_deg < 5).float().mean()
+            Tacc_15 = (rel_tangle_deg < 15).float().mean()
+            Tacc_30 = (rel_tangle_deg < 30).float().mean()
 
-        # also called mAA in some literature
-        Auc_30 = calculate_auc(rel_rangle_deg, rel_tangle_deg, max_threshold=30)
+            # also called mAA in some literature
+            Auc_30 = calculate_auc(rel_rangle_deg, rel_tangle_deg, max_threshold=30)
 
-        predictions["Racc_5"] = Racc_5
-        predictions["Racc_15"] = Racc_15
-        predictions["Racc_30"] = Racc_30
-        predictions["Tacc_5"] = Tacc_5
-        predictions["Tacc_15"] = Tacc_15
-        predictions["Tacc_30"] = Tacc_30
-        predictions["Auc_30"] = Auc_30
+            predictions["Racc_5"] = Racc_5
+            predictions["Racc_15"] = Racc_15
+            predictions["Racc_30"] = Racc_30
+            predictions["Tacc_5"] = Tacc_5
+            predictions["Tacc_15"] = Tacc_15
+            predictions["Tacc_30"] = Tacc_30
+            predictions["Auc_30"] = Auc_30
 
-        if visualize:
-            # an example if trying to conduct visualization by visdom
-            frame_num = images.shape[1]
+            if visualize:
+                # an example if trying to conduct visualization by visdom
+                frame_num = images.shape[1]
 
-            camera_dict = {"pred_cameras": {}, "gt_cameras": {}}
+                camera_dict = {"pred_cameras": {}, "gt_cameras": {}}
 
-            for visidx in range(frame_num):
-                camera_dict["pred_cameras"][visidx] = pred_cameras[visidx]
-                camera_dict["gt_cameras"][visidx] = gt_cameras[visidx]
+                for visidx in range(frame_num):
+                    camera_dict["pred_cameras"][visidx] = pred_cameras[visidx]
+                    camera_dict["gt_cameras"][visidx] = gt_cameras[visidx]
 
-            fig = plotly_scene_visualization(camera_dict, frame_num)
-            viz.plotlyplot(fig, env=cfg.exp_name, win="cams")
+                fig = plotly_scene_visualization(camera_dict, frame_num)
+                viz.plotlyplot(fig, env=cfg.exp_name, win="cams")
 
-            show_img = view_color_coded_images_for_visdom(images[0])
-            viz.images(show_img, env=cfg.exp_name, win="imgs")
+                show_img = view_color_coded_images_for_visdom(images[0])
+                viz.images(show_img, env=cfg.exp_name, win="imgs")
 
-        stats.update(predictions, time_start=time_start, stat_set=stat_set)
-        if step % cfg.train.print_interval == 0:
-            accelerator.print(stats.get_status_string(stat_set=stat_set, max_it=max_it))
+            stats.update(predictions, time_start=time_start, stat_set=stat_set)
+            if step % cfg.train.print_interval == 0:
+                accelerator.print(stats.get_status_string(stat_set=stat_set, max_it=max_it))
 
-        if training:
-            optimizer.zero_grad()
-            accelerator.backward(loss)
-            if cfg.train.clip_grad > 0 and accelerator.sync_gradients:
-                accelerator.clip_grad_norm_(model.parameters(), cfg.train.clip_grad)
-            optimizer.step()
-            lr_scheduler.step()
+            if training:
+                optimizer.zero_grad()
+                accelerator.backward(loss)
+                if cfg.train.clip_grad > 0 and accelerator.sync_gradients:
+                    accelerator.clip_grad_norm_(model.parameters(), cfg.train.clip_grad)
+                optimizer.step()
+                lr_scheduler.step()
 
     return True
 

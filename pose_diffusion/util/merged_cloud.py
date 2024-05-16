@@ -4,7 +4,6 @@ import json
 import numpy as np
 import os
 import torch
-import transform_to_pointnet
 import time
 from numba import jit, njit, prange
 
@@ -12,7 +11,7 @@ def transform_to_pointnet_py(cloud):
     # parameters
     block_size = 1.0
     stride = 0.5
-    block_points = 4096
+    block_points = 8192
     padding = 0.001
     constant_for_normalization = 20
 
@@ -117,7 +116,7 @@ def transform_to_pointnet_numba(cloud):
     # parameters
     block_size = 10
     stride = 10
-    block_points = 4096
+    block_points = 6144
     padding = 0.001
 
     data = cloud

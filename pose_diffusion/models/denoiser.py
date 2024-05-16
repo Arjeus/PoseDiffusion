@@ -39,7 +39,8 @@ class Denoiser(nn.Module):
         first_dim = self.time_embed.out_dim + self.pose_embed.out_dim + z_dim + int(self.pivot_cam_onehot)
 
         d_model = TRANSFORMER.d_model
-        self._first = nn.Linear(524564, d_model) # hardcoded for now
+        # self._first = nn.Linear(524564, d_model) # hardcoded for now
+        self._first = nn.Linear(786708, d_model) # hardcoded for now
 
         # slightly different from the paper that
         # we use 2 encoder layers and 6 decoder layers
