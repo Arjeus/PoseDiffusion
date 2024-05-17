@@ -46,7 +46,7 @@ def camera_to_rel_deg(pred_cameras, gt_cameras, device, batch_size):
 
         # Compute the difference in rotation and translation
         # between the ground truth and predicted relative camera poses
-        rel_rangle_deg = rotation_angle_16(relative_pose_gt[:, :3, :3], relative_pose_pred[:, :3, :3])
+        rel_rangle_deg = rotation_angle(relative_pose_gt[:, :3, :3], relative_pose_pred[:, :3, :3])
         rel_tangle_deg = translation_angle(relative_pose_gt[:, 3, :3], relative_pose_pred[:, 3, :3])
 
     return rel_rangle_deg, rel_tangle_deg

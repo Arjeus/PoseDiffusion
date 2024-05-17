@@ -68,7 +68,6 @@ class Denoiser(nn.Module):
         feed_feats = torch.cat([x_emb, t_emb, z], dim=-1)
         # feed_feats = feed_feats.bfloat16()
         input_ = self._first(feed_feats)
-
         feats_ = self._trunk(input_)
 
         output = self._last(feats_)

@@ -37,7 +37,7 @@ import pdb
 @hydra.main(config_path="../cfgs/", config_name="default_train_compre")
 def train_fn(cfg: DictConfig):
     OmegaConf.set_struct(cfg, False)
-    accelerator = Accelerator(even_batches=False, device_placement=False, mixed_precision='fp16')
+    accelerator = Accelerator(even_batches=False, device_placement=False)
 
     # Print configuration and accelerator state
     accelerator.print("Model Config:", OmegaConf.to_yaml(cfg), accelerator.state)

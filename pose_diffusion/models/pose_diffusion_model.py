@@ -63,8 +63,14 @@ class PoseDiffusionModel(nn.Module):
         self.diffuser = instantiate(DIFFUSER, _recursive_=False)
 
         denoiser = instantiate(DENOISER, _recursive_=False)
-        
         self.diffuser.model = denoiser
+
+        # attempt to freeze pointnet and linear to conserve memory once trained enough
+        # for param in self.image_feature_extractor.parameters():
+        #     param.requires_grad = False
+
+        # for param in self.diffuser.model._first.parameters():
+        #     param.requires_grad = False
 
         self.target_dim = denoiser.target_dim
 
