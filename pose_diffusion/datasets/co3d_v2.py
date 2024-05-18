@@ -14,6 +14,7 @@ import os.path as osp
 import random
 
 import numpy as np
+from scipy.spatial import distance
 import torch
 from PIL import Image, ImageFile
 from pytorch3d.renderer import PerspectiveCameras
@@ -238,6 +239,34 @@ class Co3dDataset(Dataset):
             )
         return image_crop
 
+    # def __getitem__(self, idx_N):
+    #     """Fetch item by index and a dynamic variable n_per_seq."""
+
+    #     ### for static batch size ###########
+    #     # index = random.randint(0,1)
+    #     # sequence_name = self.sequence_list[index]
+    #     # metadata = self.rotations[sequence_name]
+    #     # ids = np.random.choice(len(metadata), self.num_of_poses, replace=False)
+    #     # return self.get_data(index=index, ids=ids)
+
+    #     ### for dynamic batch size ###########
+    #     # Different from most pytorch datasets,
+    #     # here we not only get index, but also a dynamic variable n_per_seq
+    #     # supported by DynamicBatchSampler
+    #     if self.split == "test_initial":
+    #         index, n_per_seq = idx_N
+    #         sequence_name = self.sequence_list[index]
+    #         metadata = self.rotations[sequence_name]
+    #         ids = np.arange(len(metadata))  # Select all images
+    #         return self.get_data(index=index, ids=ids)
+
+    #     print(idx_N)
+    #     index, n_per_seq = idx_N
+    #     sequence_name = self.sequence_list[index]
+    #     metadata = self.rotations[sequence_name]
+    #     ids = np.random.choice(len(metadata), n_per_seq, replace=False)
+    #     return self.get_data(index=index, ids=ids)        
+    
     def __getitem__(self, idx_N):
         """Fetch item by index and a dynamic variable n_per_seq."""
 
@@ -262,8 +291,17 @@ class Co3dDataset(Dataset):
         index, n_per_seq = idx_N
         sequence_name = self.sequence_list[index]
         metadata = self.rotations[sequence_name]
-        ids = np.random.choice(len(metadata), n_per_seq, replace=False)
-        return self.get_data(index=index, ids=ids)        
+        global_coordinates = np.array([sample["T"] for sample in metadata])
+        initial_idx = np.random.choice(len(metadata))
+        initial_coord = metadata[initial_idx]["T"]
+        # Calculate distances from the initial point cloud
+        distances = distance.cdist([initial_coord], global_coordinates, 'euclidean')[0]
+
+        # Get indices of the closest point clouds
+        closest_indices = np.argsort(distances)[1:n_per_seq]        
+        # append initial_idx and closest_indices
+        ids = np.append(initial_idx, closest_indices)
+        return self.get_data(index=index, ids=ids)     
 
     def get_data(self, index=None, sequence_name=None, ids=(0, 1), no_images=False, return_path = False, test_init = False, compre_model = False):
         if sequence_name is None:

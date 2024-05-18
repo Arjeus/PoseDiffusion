@@ -172,7 +172,6 @@ def _test_one_category(model, category, cfg, num_frames, random_order, accelerat
         # TODO combine this into Co3D V2 dataset
         images, image_info = load_and_preprocess_images(image_paths = image_paths, image_size = cfg.test.img_size)
         images = images.to(accelerator.device)
-        # pdb.set_trace()
         if cfg.GGS.enable:
             kp1, kp2, i12 = extract_match(image_paths = image_paths, image_info = image_info)
             

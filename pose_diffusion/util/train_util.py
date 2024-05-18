@@ -57,6 +57,42 @@ class DynamicBatchSampler(BatchSampler):
 
     def __len__(self):
         return self.dataset_len
+    
+# class DynamicBatchSampler(BatchSampler):
+#     def __init__(self, dataset, num_sequences, dataset_len=1024, max_images=128, images_per_seq=(3, 20)):
+#         self.dataset = dataset
+#         self.max_images = max_images
+#         self.images_per_seq = list(range(images_per_seq[0], images_per_seq[1]))
+#         self.num_sequences = num_sequences
+#         self.dataset_len = dataset_len
+
+#         # Extract global coordinates (T) from dataset
+#         self.scenes = list(self.dataset.rotations.keys())
+
+#     def __iter__(self):
+#         for _ in range(self.dataset_len):
+#             # number per sequence
+#             n_per_seq = np.random.choice(self.images_per_seq)
+#             # number of sequences
+#             n_seqs = self.max_images // n_per_seq
+
+#             # Select the initial random point cloud
+#             self.global_coordinates = np.array([sample["T"] for sample in self.dataset.rotations[self.scenes[_]]])
+#             initial_idx = np.random.choice(len(self.global_coordinates))
+#             initial_coord = self.global_coordinates[initial_idx]
+
+#             # Calculate distances from the initial point cloud
+#             distances = distance.cdist([initial_coord], self.global_coordinates, 'euclidean')[0]
+
+#             # Get indices of the closest point clouds
+#             closest_indices = np.argsort(distances)[1:n_per_seq+1]
+
+#             # Create batches
+#             batches = [(idx, n_per_seq) for idx in closest_indices]
+#             yield batches
+
+#     def __len__(self):
+#         return self.dataset_len
 
 
 class WarmupCosineRestarts(torch.optim.lr_scheduler._LRScheduler):

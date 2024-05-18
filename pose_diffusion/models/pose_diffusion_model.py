@@ -181,7 +181,6 @@ class PoseDiffusionModel(nn.Module):
             return diffusion_results
         else:
             B, N, _ = z.shape
-            # pdb.set_trace()
             target_shape = [B, N, self.target_dim]
 
             # sampling

@@ -116,7 +116,7 @@ def transform_to_pointnet_numba(cloud):
     # parameters
     block_size = 10
     stride = 10
-    block_points = 6144
+    block_points = 4096
     padding = 0.001
 
     data = cloud

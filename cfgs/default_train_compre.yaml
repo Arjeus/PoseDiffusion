@@ -4,14 +4,14 @@ exp_name: exp001_train
 
 train:
     # Please Specify Your Own Path
-    CO3D_DIR: "/home/ubuntu/code/datasets/pcd_train"
-    CO3D_ANNOTATION_DIR: "/home/ubuntu/code/datasets/pcd_train"
+    CO3D_DIR: "/home/arj/code/datasets/pcd_train"
+    CO3D_ANNOTATION_DIR: "/home/arj/code/datasets/pcd_train"
     
     img_size: 224
     category: seen
     restart_num: 50
     lr: 0.0001
-    resume_ckpt: "/home/ubuntu/code/datasets/pcd_train/ckpt_000019"
+    resume_ckpt: "/home/arj/code/datasets/pcd_train/ckpt_000009"
     # resume_ckpt: False
     epochs: 20
     ckpt_interval: 1
@@ -46,7 +46,7 @@ train:
     actual_batch_size: 1
 debug: True
 
-exp_dir: "/home/ubuntu/code/datasets/pcd_train"
+exp_dir: "/home/arj/code/datasets/pcd_train"
 
 MODEL:
     # _target_: models.PoseDiffusionModelCompre
